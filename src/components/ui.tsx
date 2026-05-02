@@ -57,16 +57,20 @@ export function Header({
   onBack?: () => void;
   action?: ReactNode;
 }) {
+  const titleOnly = !onBack && title.length > 0;
+
   return (
-    <header className="screen-header">
+    <header className={`screen-header ${titleOnly ? 'title-header' : ''}`}>
       {onBack ? (
         <IconButton label="뒤로가기" onClick={onBack}>
           <ChevronLeft size={20} />
         </IconButton>
+      ) : titleOnly ? (
+        <h1 className="screen-heading">{title}</h1>
       ) : (
         <strong className="brand">집:착</strong>
       )}
-      <span className="screen-title">{title}</span>
+      {!titleOnly && <span className="screen-title">{title}</span>}
       {action ?? (
         <IconButton label="알림">
           <Bell size={18} />
