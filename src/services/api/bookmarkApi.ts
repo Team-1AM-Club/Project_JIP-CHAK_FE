@@ -3,22 +3,20 @@ import { apiRequest } from './apiClient';
 import { apiEndpoints } from './endpoints';
 
 export const bookmarkApi = {
-  getProperties(token: string) {
-    return apiRequest<SavedReport[]>(apiEndpoints.bookmarks.properties, { token });
+  getProperties() {
+    return apiRequest<SavedReport[]>(apiEndpoints.bookmarks.properties);
   },
 
-  saveProperty(token: string, reportId: string) {
+  saveProperty(reportId: string) {
     return apiRequest<SavedReport>(apiEndpoints.bookmarks.properties, {
       method: 'POST',
-      token,
       body: JSON.stringify({ reportId }),
     });
   },
 
-  deleteProperty(token: string, id: string) {
+  deleteProperty(id: string) {
     return apiRequest<void>(apiEndpoints.bookmarks.property(id), {
       method: 'DELETE',
-      token,
     });
   },
 };

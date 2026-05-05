@@ -55,7 +55,7 @@ button {
 
 .screen-header {
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  grid-template-columns: 36px 1fr 36px;
   align-items: center;
   gap: 8px;
   min-height: 44px;
@@ -63,7 +63,7 @@ button {
 }
 
 .screen-header.title-header {
-  grid-template-columns: 1fr 44px;
+  grid-template-columns: 1fr 36px;
   margin-bottom: 18px;
 }
 
@@ -175,14 +175,15 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 22px;
 }
 
 .section-title h2 {
   margin: 0;
 }
 
-.section-title button {
+.section-title button,
+.section-title > span {
   border: 0;
   background: transparent;
   color: var(--color-ink-muted);
@@ -351,11 +352,11 @@ button {
   align-items: center;
   gap: 12px;
   padding: 14px;
-  border: 1px solid transparent;
+  border: 2px solid transparent;
 }
 
 .profile-card.selected {
-  border: 2px solid var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .profile-icon,
@@ -575,6 +576,10 @@ button {
 .chips.strong button.active {
   color: #fff;
   background: var(--color-ink);
+}
+
+.chips.strong {
+  margin-bottom: 14px;
 }
 
 .map-screen {
@@ -1252,7 +1257,7 @@ button {
 }
 
 .saved-row {
-  grid-template-columns: 48px minmax(0, 1fr) 24px;
+  grid-template-columns: 42px minmax(0, 1fr) 18px;
   gap: 14px;
   min-height: 106px;
   padding: 16px;

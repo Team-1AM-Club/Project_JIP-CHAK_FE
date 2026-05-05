@@ -26,9 +26,9 @@ export function HomePage({
         <div>
           <span>NEW</span>
           <h1>살고 싶은 집의<br />주소를 분석해보세요</h1>
-          <button className="small-cta">
+          <span className="small-cta">
             주소 검색하기 <ArrowRight size={15} />
-          </button>
+          </span>
         </div>
         <div className="hero-house" />
       </Card>
@@ -80,7 +80,7 @@ function SectionTitle({ title, action }: { title: string; action: string }) {
   return (
     <div className="section-title">
       <h2>{title}</h2>
-      <button>{action}</button>
+      <span>{action}</span>
     </div>
   );
 }

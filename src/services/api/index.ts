@@ -5,3 +5,6 @@ export { reportApi } from './reportApi';
 export { userApi } from './userApi';
 export { apiEndpoints, riskEndpointByType } from './endpoints';
 export { ApiError, apiRequest } from './apiClient';
+export type { ApiEnvelope, RequestOptions } from './apiClient';
+export { tokenStorage } from './tokenStorage';
+export type { StoredTokens } from './tokenStorage';
