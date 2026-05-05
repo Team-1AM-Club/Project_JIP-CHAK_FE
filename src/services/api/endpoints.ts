@@ -2,6 +2,10 @@ import type { RiskType } from '../../types/domain';
 
 export const API_BASE_PATH = '/api/v1';
 
+/**
+ * 도메인 RiskType(대문자) → 백엔드 URL 세그먼트(lowercase) 매핑.
+ * 주의: 도메인은 'SAFETY'이지만 백엔드 URL/wire는 'security'를 씀.
+ */
 export const riskEndpointByType: Record<RiskType, string> = {
   FLOOD: 'flood',
   SAFETY: 'security',
