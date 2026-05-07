@@ -29,13 +29,15 @@ button {
 .app-shell {
   display: flex;
   min-height: 100vh;
+  align-items: center;
   justify-content: center;
   padding: clamp(0px, 2.4vw, 24px);
 }
 
 .mobile-frame {
-  width: min(100%, var(--frame-width));
-  min-height: calc(100vh - clamp(0px, 4.8vw, 48px));
+  width: min(100%, var(--frame-width), calc((100vh - clamp(0px, 4.8vw, 48px)) * 0.461538));
+  aspect-ratio: 9 / 19.5;
+  height: auto;
   overflow: hidden;
   position: relative;
   background: linear-gradient(180deg, #fffdfa 0%, var(--color-bg) 100%);
@@ -49,7 +51,9 @@ button {
 }
 
 .screen {
-  min-height: calc(100vh - 40px);
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
   padding: 24px 18px;
 }
 
@@ -67,11 +71,34 @@ button {
   margin-bottom: 18px;
 }
 
+.screen-header.logo-header {
+  grid-template-columns: 1fr 44px;
+  margin-bottom: 18px;
+}
+
 .brand {
-  grid-column: 1 / 3;
   font-size: 22px;
   font-weight: 900;
   letter-spacing: 0;
+}
+
+.brand-logo {
+  display: block;
+  background-image: url("/jipchak-logo.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 165%;
+  background-color: transparent;
+}
+
+.brand.brand-logo {
+  width: 104px;
+  height: 42px;
+}
+
+.home-brand-logo {
+  background-image: url("/jipchak-logo_home.png");
+  background-size: 170%;
 }
 
 .screen-heading {
@@ -236,7 +263,7 @@ button {
   right: 0;
   bottom: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   padding: 10px 24px 18px;
   background: rgba(255, 255, 255, 0.94);
   border-top: 1px solid rgba(26, 37, 64, 0.08);
@@ -256,6 +283,124 @@ button {
 
 .bottom-nav-item.active {
   color: var(--color-primary);
+}
+
+.login-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 64px 22px 24px;
+  background: #fbf8f3;
+}
+
+.login-content-group {
+  display: grid;
+  gap: 170px;
+  transform: translateY(20px);
+}
+
+.login-hero {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.login-logo.brand-logo {
+  width: 260px;
+  height: 96px;
+  margin-bottom: 58px;
+}
+
+.login-hero h1 {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 23px;
+  line-height: 1.38;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.login-card {
+  padding: 18px;
+}
+
+.social-login-card {
+  padding: 12px 14px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.social-login-list {
+  display: grid;
+  gap: 10px;
+}
+
+.social-login-button {
+  width: 100%;
+  min-height: 50px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 0;
+  background: transparent;
+}
+
+.social-login-button img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.social-login-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.social-login-loading {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-ink-muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.login-error,
+.inline-error,
+.inline-status {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.login-error,
+.inline-error {
+  color: var(--color-alert);
+}
+
+.inline-status {
+  color: var(--color-ink-muted);
+}
+
+.login-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--color-ink-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.login-footer svg {
+  color: var(--color-safe);
 }
 
 .onboarding {
@@ -430,16 +575,16 @@ button {
 
 .quick-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   margin: 14px 0 22px;
 }
 
 .quick-grid .card {
   display: grid;
   place-items: center;
-  gap: 10px;
-  min-height: 80px;
+  gap: 9px;
+  min-height: 76px;
   color: var(--color-ink-body);
   text-align: center;
   font-size: 12px;
@@ -601,10 +746,50 @@ button {
 }
 
 .mock-map {
-  min-height: calc(100vh - 40px);
+  min-height: 100%;
   position: relative;
   overflow: hidden;
   background: #e7decd;
+}
+
+.naver-map,
+.naver-map-fallback {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #e7decd;
+}
+
+.naver-map-node {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-sdk-loading,
+.map-sdk-notice {
+  position: absolute;
+  left: 50%;
+  z-index: 4;
+  width: max-content;
+  max-width: calc(100% - 40px);
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--shadow-card);
+  color: var(--color-ink-body);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.map-sdk-loading,
+.map-sdk-notice {
+  top: 96px;
+  padding: 10px 14px;
 }
 
 .mock-map.compact {
@@ -1396,10 +1581,6 @@ button {
   .mobile-frame {
     --frame-width: clamp(390px, 32vw, 430px);
   }
-
-  .app-shell {
-    align-items: center;
-  }
 }
 
 @media (max-width: 430px) {
@@ -1408,14 +1589,23 @@ button {
   }
 
   .mobile-frame {
-    min-height: 100vh;
+    width: min(100vw, calc(100vh * 0.461538));
     border: 0;
     border-radius: 0;
   }
 
   .screen,
   .mock-map {
-    min-height: 100vh;
+    min-height: 0;
+  }
+
+  .login-screen {
+    padding-top: 56px;
+  }
+
+  .login-content-group {
+    gap: 160px;
+    transform: translateY(16px);
   }
 }
 

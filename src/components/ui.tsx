@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
-import { ChevronLeft, Home, User, Bookmark, Bell } from 'lucide-react';
+import { Bell, ChevronLeft, Home, User } from 'lucide-react';
 import type { Grade, Screen } from '../types/domain';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -58,9 +58,10 @@ export function Header({
   action?: ReactNode;
 }) {
   const titleOnly = !onBack && title.length > 0;
+  const logoOnly = !onBack && title.length === 0;
 
   return (
-    <header className={`screen-header ${titleOnly ? 'title-header' : ''}`}>
+    <header className={`screen-header ${titleOnly ? 'title-header' : ''} ${logoOnly ? 'logo-header' : ''}`}>
       {onBack ? (
         <IconButton label="뒤로가기" onClick={onBack}>
           <ChevronLeft size={20} />
@@ -68,9 +69,9 @@ export function Header({
       ) : titleOnly ? (
         <h1 className="screen-heading">{title}</h1>
       ) : (
-        <strong className="brand">집:착</strong>
+        <span className="brand brand-logo home-brand-logo" aria-label="집착" />
       )}
-      {!titleOnly && <span className="screen-title">{title}</span>}
+      {onBack && <span className="screen-title">{title}</span>}
       {action ?? (
         <IconButton label="알림">
           <Bell size={18} />
@@ -82,7 +83,6 @@ export function Header({
 
 export function BottomNav({ active, navigate }: { active: Screen; navigate: (screen: Screen) => void }) {
   const items = [
-    { key: 'saved' as Screen, label: '저장', icon: Bookmark },
     { key: 'home' as Screen, label: '홈', icon: Home },
     { key: 'my' as Screen, label: '마이', icon: User },
   ];

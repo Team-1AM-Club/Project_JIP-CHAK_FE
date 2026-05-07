@@ -1,12 +1,12 @@
-import type { AuthTokenResponse, LoginRequest } from '../../types/domain';
+import type { AuthLoginResponse, LoginRequest } from '../../types/domain';
 import { apiRequest } from './apiClient';
 import { apiEndpoints } from './endpoints';
 
 export const authApi = {
-  login(payload: LoginRequest) {
-    return apiRequest<AuthTokenResponse>(apiEndpoints.auth.login, {
+  login(provider: LoginRequest['provider']) {
+    return apiRequest<AuthLoginResponse>(apiEndpoints.auth.login, {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ provider }),
     });
   },
 
@@ -18,7 +18,7 @@ export const authApi = {
   },
 
   reissue(refreshToken: string) {
-    return apiRequest<AuthTokenResponse>(apiEndpoints.auth.reissue, {
+    return apiRequest<AuthLoginResponse>(apiEndpoints.auth.reissue, {
       method: 'POST',
       body: JSON.stringify({ refreshToken }),
     });

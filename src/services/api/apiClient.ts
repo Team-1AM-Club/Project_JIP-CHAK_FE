@@ -39,11 +39,45 @@ export async function apiRequest<TResponse>(path: string, options: RequestOption
   });
 
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : undefined;
+  const payload = parseResponseBody(text);
 
   if (!response.ok) {
     throw new ApiError(`API request failed: ${response.status}`, response.status, payload);
   }
 
-  return payload as TResponse;
+  return unwrapApiPayload(payload) as TResponse;
+}
+
+function parseResponseBody(text: string) {
+  if (!text) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+function unwrapApiPayload(payload: unknown) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return payload;
+  }
+
+  const record = payload as Record<string, unknown>;
+
+  if ('data' in record) {
+    return record.data;
+  }
+
+  if ('result' in record) {
+    return record.result;
+  }
+
+  if ('response' in record) {
+    return record.response;
+  }
+
+  return payload;
 }

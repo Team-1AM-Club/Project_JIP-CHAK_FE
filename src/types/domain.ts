@@ -1,6 +1,7 @@
 export type UserProfileType = 'SINGLE' | 'COUPLE' | 'FAMILY';
 export type RiskType = 'FLOOD' | 'SAFETY' | 'MEDICAL' | 'CONGESTION' | 'NOISE';
 export type Grade = 'SAFE' | 'NORMAL' | 'CAUTION' | 'DANGER';
+export type SocialProvider = 'KAKAO' | 'GOOGLE' | 'NAVER';
 
 export interface AddressCandidate {
   id: string;
@@ -20,24 +21,6 @@ export interface RiskScore {
   summary: string;
 }
 
-export interface RiskMetric {
-  label: string;
-  value: string;
-  grade?: Grade;
-}
-
-export interface RiskDetail {
-  type: RiskType;
-  title: string;
-  score: number;
-  grade: Grade;
-  summary: string;
-  description: string;
-  metrics: RiskMetric[];
-  source: string;
-  trend: number[];
-}
-
 export interface ReportSummary {
   reportId: string;
   address: AddressCandidate;
@@ -55,21 +38,18 @@ export interface CompareResult {
   recommendation: string;
 }
 
-export interface SavedReport {
-  report: ReportSummary;
-  savedAt: string;
-  tags: string[];
-}
-
 export interface LoginRequest {
-  email: string;
-  password: string;
+  provider: SocialProvider;
 }
 
-export interface AuthTokenResponse {
+export type AuthLoginResponse =
+  | string
+  | {
   accessToken: string;
   refreshToken?: string;
-}
+  redirectUrl?: string;
+  authorizationUrl?: string;
+};
 
 export interface UserProfile {
   id: string;
@@ -83,13 +63,10 @@ export interface UserSettings {
 }
 
 export type Screen =
+  | 'login'
   | 'onboarding'
   | 'home'
   | 'search'
   | 'map'
-  | 'loading'
-  | 'report'
-  | 'detail'
   | 'compare'
-  | 'saved'
   | 'my';

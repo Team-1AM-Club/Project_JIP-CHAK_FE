@@ -1,65 +1,183 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AppShell } from './components/AppShell';
-import { addresses, compareResult, mainReport, riskDetails, savedReports as initialSaved } from './data/mockData';
 import { ComparePage } from './pages/ComparePage';
 import { HomePage } from './pages/HomePage';
-import { LoadingPage } from './pages/LoadingPage';
+import { LoginPage } from './pages/LoginPage';
 import { MapSelectPage } from './pages/MapSelectPage';
 import { MyPage } from './pages/MyPage';
 import { Onboarding } from './pages/Onboarding';
-import { ReportPage } from './pages/ReportPage';
-import { RiskDetailPage } from './pages/RiskDetailPage';
-import { SavedPage } from './pages/SavedPage';
 import { SearchPage } from './pages/SearchPage';
-import { mockService } from './services/mockService';
-import type { AddressCandidate, ReportSummary, RiskType, Screen, UserProfileType } from './types/domain';
+import { addressApi, authApi, userApi } from './services/api';
+import { authStorage } from './services/authStorage';
+import type { AddressCandidate, CompareResult, Screen, SocialProvider, UserProfileType } from './types/domain';
 
 function App() {
-  const [screen, setScreen] = useState<Screen>('onboarding');
+  const [screen, setScreen] = useState<Screen>('login');
+  const [accessToken, setAccessToken] = useState<string | null>(() => authStorage.getAccessToken());
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [profileType, setProfileType] = useState<UserProfileType>('SINGLE');
-  const [selectedAddress, setSelectedAddress] = useState<AddressCandidate>(addresses[0]);
-  const [currentReport, setCurrentReport] = useState<ReportSummary>(mainReport);
-  const [selectedRisk, setSelectedRisk] = useState<RiskType>('FLOOD');
-  const [homeData, setHomeData] = useState({ recentReports: initialSaved.slice(0, 3), savedReports: initialSaved.slice(0, 2) });
+  const [selectedAddress, setSelectedAddress] = useState<AddressCandidate | null>(null);
+  const [compareTargets, setCompareTargets] = useState<AddressCandidate[]>([]);
+  const [currentCompare, setCurrentCompare] = useState<CompareResult | null>(null);
+  const [compareLoading, setCompareLoading] = useState(false);
+  const [compareError, setCompareError] = useState('');
 
   useEffect(() => {
-    mockService.getHome().then(setHomeData);
+    const storedAccessToken = authStorage.getAccessToken();
+    const refreshToken = authStorage.getRefreshToken();
+
+    if (storedAccessToken) {
+      setAccessToken(storedAccessToken);
+      setScreen('home');
+      return;
+    }
+
+    if (!refreshToken) {
+      return;
+    }
+
+    authApi
+      .reissue(refreshToken)
+      .then((tokens) => {
+        if (typeof tokens === 'string') {
+          return;
+        }
+
+        authStorage.saveTokens(tokens);
+        setAccessToken(tokens.accessToken);
+        setScreen('home');
+      })
+      .catch(() => {
+        authStorage.clear();
+      });
   }, []);
+
+  useEffect(() => {
+    if (screen !== 'compare') {
+      return;
+    }
+
+    setCompareError('');
+
+    if (compareTargets.length < 2) {
+      setCurrentCompare(null);
+      return;
+    }
+
+    setCompareLoading(true);
+    addressApi
+      .compare(compareTargets[0].id, compareTargets[1].id)
+      .then(setCurrentCompare)
+      .catch(() => {
+        setCurrentCompare(null);
+        setCompareError('주소 비교 API 연결에 실패했습니다.');
+      })
+      .finally(() => {
+        setCompareLoading(false);
+      });
+  }, [screen, compareTargets]);
 
   const navigate = (next: Screen) => {
     setScreen(next);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const completeOnboarding = () => {
+  const handleLogin = async (provider: SocialProvider) => {
+    const result = await authApi.login(provider);
+    const redirectUrl = typeof result === 'string' ? result : result.redirectUrl ?? result.authorizationUrl;
+
+    if (redirectUrl) {
+      window.location.assign(redirectUrl);
+      return;
+    }
+
+    if (typeof result === 'string') {
+      navigate('onboarding');
+      return;
+    }
+
+    authStorage.saveTokens(result);
+
+    if (result.accessToken) {
+      setAccessToken(result.accessToken);
+    }
+
+    navigate('onboarding');
+  };
+
+  const completeOnboarding = async () => {
     if (onboardingStep < 3) {
       setOnboardingStep((step) => step + 1);
       return;
     }
+
+    if (accessToken) {
+      try {
+        await userApi.updateWeights(accessToken, profileType);
+      } catch {
+        // 가중치 저장 실패가 홈 진입을 막지는 않습니다.
+      }
+    }
+
     navigate('home');
   };
 
   const selectAddress = (address: AddressCandidate) => {
     setSelectedAddress(address);
+    setCompareTargets((current) => {
+      const withoutDuplicate = current.filter((item) => item.id !== address.id);
+      return [address, ...withoutDuplicate].slice(0, 2);
+    });
     navigate('map');
   };
 
-  const startAnalysis = async () => {
-    navigate('loading');
-    const report = await mockService.createReport(selectedAddress.id, profileType);
-    setCurrentReport(report);
+  const searchAddresses = useCallback((query: string) => addressApi.search(query), []);
+
+  const openMapFromSearch = async () => {
+    if (!navigator.geolocation) {
+      navigate('map');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setSelectedAddress(createCoordinateAddress(position.coords.latitude, position.coords.longitude));
+        navigate('map');
+      },
+      () => {
+        setSelectedAddress(null);
+        navigate('map');
+      },
+    );
   };
 
-  const openDetail = (type: RiskType) => {
-    setSelectedRisk(type);
-    navigate('detail');
+  const pickLocationOnMap = (lat: number, lng: number) => {
+    setSelectedAddress(createCoordinateAddress(lat, lng));
   };
 
-  const bottomNav = screen === 'home' || screen === 'saved' || screen === 'my';
+  const handleLogout = async () => {
+    if (accessToken) {
+      try {
+        await authApi.logout(accessToken);
+      } catch {
+        // 서버 로그아웃 실패 시에도 로컬 세션은 정리합니다.
+      }
+    }
+
+    authStorage.clear();
+    setAccessToken(null);
+    setOnboardingStep(0);
+    setSelectedAddress(null);
+    setCompareTargets([]);
+    setCurrentCompare(null);
+    navigate('login');
+  };
+
+  const bottomNav = screen === 'home' || screen === 'my';
 
   return (
     <AppShell active={screen} navigate={navigate} bottomNav={bottomNav}>
+      {screen === 'login' && <LoginPage onLogin={handleLogin} />}
       {screen === 'onboarding' && (
         <Onboarding
           step={onboardingStep}
@@ -68,30 +186,46 @@ function App() {
           next={completeOnboarding}
         />
       )}
-      {screen === 'home' && (
-        <HomePage recentReports={homeData.recentReports} savedReports={homeData.savedReports} navigate={navigate} />
-      )}
+      {screen === 'home' && <HomePage navigate={navigate} />}
       {screen === 'search' && (
         <SearchPage
-          candidates={addresses}
           selectAddress={selectAddress}
           onBack={() => navigate('home')}
-          openMap={() => navigate('map')}
+          openMap={openMapFromSearch}
+          searchAddresses={searchAddresses}
         />
       )}
       {screen === 'map' && (
-        <MapSelectPage address={selectedAddress} onBack={() => navigate('search')} analyze={startAnalysis} />
+        <MapSelectPage
+          address={selectedAddress}
+          onBack={() => navigate('search')}
+          confirm={() => navigate('home')}
+          onPickLocation={pickLocationOnMap}
+        />
       )}
-      {screen === 'loading' && <LoadingPage address={selectedAddress} done={() => navigate('report')} />}
-      {screen === 'report' && <ReportPage report={currentReport} navigate={navigate} openDetail={openDetail} />}
-      {screen === 'detail' && (
-        <RiskDetailPage detail={riskDetails[selectedRisk]} address={currentReport.address} onBack={() => navigate('report')} />
+      {screen === 'compare' && (
+        <ComparePage
+          compare={currentCompare}
+          isLoading={compareLoading}
+          errorMessage={compareError}
+          navigate={navigate}
+        />
       )}
-      {screen === 'compare' && <ComparePage compare={compareResult} navigate={navigate} />}
-      {screen === 'saved' && <SavedPage savedReports={initialSaved} navigate={navigate} />}
-      {screen === 'my' && <MyPage />}
+      {screen === 'my' && <MyPage token={accessToken} onLogout={handleLogout} />}
     </AppShell>
   );
+}
+
+function createCoordinateAddress(lat: number, lng: number): AddressCandidate {
+  return {
+    id: `coord_${lat.toFixed(6)}_${lng.toFixed(6)}`,
+    roadAddress: '지도에서 선택한 위치',
+    detailAddress: `위도 ${lat.toFixed(6)} · 경도 ${lng.toFixed(6)}`,
+    dong: '선택 위치',
+    gu: '서울',
+    lat,
+    lng,
+  };
 }
 
 export default App;

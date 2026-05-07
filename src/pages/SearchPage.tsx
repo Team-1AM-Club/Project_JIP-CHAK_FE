@@ -1,25 +1,58 @@
 import { ArrowRight, Map, Search, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Header } from '../components/ui';
 import type { AddressCandidate } from '../types/domain';
 
 export function SearchPage({
-  candidates,
   selectAddress,
   onBack,
   openMap,
+  searchAddresses,
 }: {
-  candidates: AddressCandidate[];
   selectAddress: (address: AddressCandidate) => void;
   onBack: () => void;
   openMap: () => void;
+  searchAddresses: (query: string) => Promise<AddressCandidate[]>;
 }) {
-  const [query, setQuery] = useState('망원동');
-  const filtered = useMemo(
-    () =>
-      candidates.filter((item) => item.roadAddress.includes(query) || item.dong.includes(query)).slice(0, 4),
-    [candidates, query],
-  );
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<AddressCandidate[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      setErrorMessage('');
+      return;
+    }
+
+    let ignore = false;
+    const timer = window.setTimeout(async () => {
+      setIsSearching(true);
+      setErrorMessage('');
+
+      try {
+        const nextResults = await searchAddresses(query);
+        if (!ignore) {
+          setResults(nextResults.slice(0, 6));
+        }
+      } catch {
+        if (!ignore) {
+          setErrorMessage('주소 검색 API 연결에 실패했습니다.');
+          setResults([]);
+        }
+      } finally {
+        if (!ignore) {
+          setIsSearching(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      ignore = true;
+      window.clearTimeout(timer);
+    };
+  }, [query, searchAddresses]);
 
   return (
     <div className="screen search-screen">
@@ -36,28 +69,27 @@ export function SearchPage({
         <Map size={22} />
         <div>
           <strong>지도에서 직접 찾기</strong>
-          <small>주소가 정확하지 않을 때</small>
+          <small>현재 위치 기준으로 주소를 찾습니다</small>
         </div>
         <ArrowRight size={16} />
       </Card>
 
-      <h2 className="subhead">자동완성</h2>
+      <h2 className="subhead">검색 결과</h2>
+      {isSearching && <p className="inline-status">주소 검색 중...</p>}
+      {errorMessage && <p className="inline-error">{errorMessage}</p>}
+      {!query.trim() && <p className="empty-message">검색어를 입력하면 주소 검색 API 결과가 표시됩니다.</p>}
+      {query.trim() && !isSearching && !errorMessage && results.length === 0 && (
+        <p className="empty-message">검색 결과가 없습니다.</p>
+      )}
       <div className="search-results">
-        {filtered.map((candidate) => (
+        {results.map((candidate) => (
           <button key={candidate.id} onClick={() => selectAddress(candidate)}>
             <span className="pin-dot" />
             <span>
-              <strong>{candidate.roadAddress.replace('서울 마포구 ', '')}</strong>
+              <strong>{candidate.roadAddress}</strong>
               <small>{candidate.detailAddress}</small>
             </span>
           </button>
-        ))}
-      </div>
-
-      <h2 className="subhead">최근 검색어</h2>
-      <div className="chips">
-        {['연남동', '성수동1가', '봉천동', '아현동'].map((tag) => (
-          <button key={tag}>{tag}</button>
         ))}
       </div>
     </div>

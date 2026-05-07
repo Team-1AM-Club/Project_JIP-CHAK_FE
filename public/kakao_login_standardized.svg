@@ -1,0 +1,7 @@
+<svg width="368" height="56" viewBox="0 0 368 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="368" height="56" rx="8" fill="rgb(254,229,0)"/>
+  <g transform="translate(0 0.400) scale(1.226667)">
+    <path d="M24.000,13.976 C19.029,13.976 15.000,17.106 15.000,20.965 C15.000,23.365 16.558,25.482 18.932,26.740 L17.933,30.407 C17.845,30.731 18.213,30.989 18.496,30.801 L22.873,27.897 C23.243,27.933 23.618,27.954 24.000,27.954 C28.970,27.954 32.1000,24.825 32.1000,20.965 C32.1000,17.106 28.970,13.976 24.000,13.976 " fill="rgb(0, 0, 0)" fill-rule="evenodd" opacity="0.902"/>
+    <text fill="rgb(0, 0, 0)" font-family="AppleGothic" font-size="15px" kerning="auto" x="119px" y="29.219px"><tspan fill="#191919" font-family="AppleSDGothicNeo" font-size="15px">카카오 로그인</tspan></text>
+  </g>
+</svg>

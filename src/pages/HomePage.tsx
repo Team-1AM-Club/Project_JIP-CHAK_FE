@@ -1,16 +1,8 @@
-import { ArrowRight, BarChart2, Bell, Map, TrendingUp } from 'lucide-react';
-import { Card, Header, IconButton, ScorePill } from '../components/ui';
-import type { SavedReport, Screen } from '../types/domain';
+import { ArrowRight, BarChart2, Bell, Map } from 'lucide-react';
+import { Card, Header, IconButton } from '../components/ui';
+import type { Screen } from '../types/domain';
 
-export function HomePage({
-  recentReports,
-  savedReports,
-  navigate,
-}: {
-  recentReports: SavedReport[];
-  savedReports: SavedReport[];
-  navigate: (screen: Screen) => void;
-}) {
+export function HomePage({ navigate }: { navigate: (screen: Screen) => void }) {
   return (
     <div className="screen home-screen">
       <Header
@@ -42,45 +34,12 @@ export function HomePage({
           <BarChart2 size={22} />
           <strong>비교하기</strong>
         </Card>
-        <Card>
-          <TrendingUp size={22} />
-          <strong>동네 랭킹</strong>
-        </Card>
       </div>
 
-      <SectionTitle title="최근 본 주소" action="모두보기" />
-      <div className="list-stack">
-        {recentReports.map((saved) => (
-          <Card key={saved.report.reportId} className="address-row" onClick={() => navigate('report')}>
-            <ScorePill score={saved.report.totalScore} grade={saved.report.totalGrade} />
-            <div>
-              <strong>{saved.report.address.roadAddress}</strong>
-              <small>{saved.report.address.detailAddress}</small>
-            </div>
-            <ArrowRight size={16} />
-          </Card>
-        ))}
-      </div>
-
-      <SectionTitle title="저장한 리포트" action={`${savedReports.length + 1}개`} />
-      <div className="saved-preview">
-        {savedReports.map((saved) => (
-          <Card key={saved.report.reportId} onClick={() => navigate('saved')}>
-            <ScorePill score={saved.report.totalScore} grade={saved.report.totalGrade} />
-            <strong>{saved.report.address.dong}</strong>
-            <small>{saved.tags[0]}</small>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SectionTitle({ title, action }: { title: string; action: string }) {
-  return (
-    <div className="section-title">
-      <h2>{title}</h2>
-      <button>{action}</button>
+      <Card className="empty-home-card">
+        <strong>담당 범위 외 데이터는 표시하지 않습니다</strong>
+        <p>최근 본 주소, 분석 리포트, 저장 목록은 리포트/북마크 담당 API 연동 후 노출됩니다.</p>
+      </Card>
     </div>
   );
 }

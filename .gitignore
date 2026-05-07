@@ -42,3 +42,9 @@ Thumbs.db
 # Editor / local workspace settings
 .vscode/
 .idea/
+
+# Design source files
+*.psd
+
+# txt
+todolist.txt
