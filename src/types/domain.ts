@@ -1,7 +1,6 @@
 export type UserProfileType = 'SINGLE' | 'COUPLE' | 'FAMILY';
 export type RiskType = 'FLOOD' | 'SAFETY' | 'MEDICAL' | 'CONGESTION' | 'NOISE';
 export type Grade = 'SAFE' | 'NORMAL' | 'CAUTION' | 'DANGER';
-export type ReportTaskStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
 export interface AddressCandidate {
   id: string;
@@ -81,27 +80,6 @@ export interface UserProfile {
 export interface UserSettings {
   notificationsEnabled: boolean;
   darkMode: 'SYSTEM' | 'LIGHT' | 'DARK';
-}
-
-export interface CreateReportRequest {
-  addressId?: string;
-  roadAddress?: string;
-  detailAddress?: string;
-  lat?: number;
-  lng?: number;
-  profileType: UserProfileType;
-}
-
-export interface CreateReportResponse {
-  taskId: string;
-  reportId?: string;
-}
-
-export interface ReportStatusResponse {
-  taskId: string;
-  reportId?: string;
-  status: ReportTaskStatus;
-  progress?: number;
 }
 
 export type Screen =
