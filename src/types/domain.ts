@@ -38,6 +38,26 @@ export interface CompareResult {
   recommendation: string;
 }
 
+export interface RecentAddressSummary {
+  id: string;
+  address: string;
+  detail: string;
+  score?: number;
+  grade?: Grade;
+  viewedAtLabel?: string;
+}
+
+export interface SavedReportPreview {
+  id: string;
+  reportId?: string;
+  address: string;
+  detail: string;
+  score?: number;
+  grade?: Grade;
+  savedAtLabel?: string;
+  isBookmarked?: boolean;
+}
+
 export interface LoginRequest {
   provider: SocialProvider;
 }
@@ -65,6 +85,7 @@ export interface UserSettings {
 export type Screen =
   | 'login'
   | 'onboarding'
+  | 'saved'
   | 'home'
   | 'search'
   | 'map'

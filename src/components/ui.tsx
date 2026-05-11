@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
-import { Bell, ChevronLeft, Home, User } from 'lucide-react';
+import { Bell, Bookmark, ChevronLeft, Home, User } from 'lucide-react';
 import type { Grade, Screen } from '../types/domain';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -83,6 +83,7 @@ export function Header({
 
 export function BottomNav({ active, navigate }: { active: Screen; navigate: (screen: Screen) => void }) {
   const items = [
+    { key: 'saved' as Screen, label: '저장', icon: Bookmark },
     { key: 'home' as Screen, label: '홈', icon: Home },
     { key: 'my' as Screen, label: '마이', icon: User },
   ];

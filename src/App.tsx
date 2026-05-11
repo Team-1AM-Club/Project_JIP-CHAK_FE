@@ -6,10 +6,19 @@ import { LoginPage } from './pages/LoginPage';
 import { MapSelectPage } from './pages/MapSelectPage';
 import { MyPage } from './pages/MyPage';
 import { Onboarding } from './pages/Onboarding';
+import { SavedPage } from './pages/SavedPage';
 import { SearchPage } from './pages/SearchPage';
 import { addressApi, authApi, userApi } from './services/api';
 import { authStorage } from './services/authStorage';
-import type { AddressCandidate, CompareResult, Screen, SocialProvider, UserProfileType } from './types/domain';
+import type {
+  AddressCandidate,
+  CompareResult,
+  RecentAddressSummary,
+  SavedReportPreview,
+  Screen,
+  SocialProvider,
+  UserProfileType,
+} from './types/domain';
 
 function App() {
   const [screen, setScreen] = useState<Screen>('login');
@@ -19,6 +28,8 @@ function App() {
   const [selectedAddress, setSelectedAddress] = useState<AddressCandidate | null>(null);
   const [compareTargets, setCompareTargets] = useState<AddressCandidate[]>([]);
   const [currentCompare, setCurrentCompare] = useState<CompareResult | null>(null);
+  const [recentAddresses, setRecentAddresses] = useState<RecentAddressSummary[]>([]);
+  const [savedReports, setSavedReports] = useState<SavedReportPreview[]>([]);
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState('');
 
@@ -170,10 +181,12 @@ function App() {
     setSelectedAddress(null);
     setCompareTargets([]);
     setCurrentCompare(null);
+    setRecentAddresses([]);
+    setSavedReports([]);
     navigate('login');
   };
 
-  const bottomNav = screen === 'home' || screen === 'my';
+  const bottomNav = screen === 'saved' || screen === 'home' || screen === 'my';
 
   return (
     <AppShell active={screen} navigate={navigate} bottomNav={bottomNav}>
@@ -186,7 +199,10 @@ function App() {
           next={completeOnboarding}
         />
       )}
-      {screen === 'home' && <HomePage navigate={navigate} />}
+      {screen === 'saved' && <SavedPage />}
+      {screen === 'home' && (
+        <HomePage navigate={navigate} recentAddresses={recentAddresses} savedReports={savedReports} />
+      )}
       {screen === 'search' && (
         <SearchPage
           selectAddress={selectAddress}
