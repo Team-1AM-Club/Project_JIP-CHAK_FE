@@ -397,6 +397,52 @@ button {
   color: var(--color-ink-muted);
 }
 
+.login-error-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(17 24 39 / 42%);
+}
+
+.login-error-modal {
+  width: min(100%, 270px);
+  padding: 24px 20px 18px;
+  border-radius: 16px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 22px 46px rgb(17 24 39 / 24%);
+}
+
+.login-error-modal h2 {
+  margin: 0 0 10px;
+  color: var(--color-ink);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.login-error-modal p {
+  margin: 0 0 18px;
+  color: var(--color-ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.login-error-modal button {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .login-footer {
   display: flex;
   align-items: center;

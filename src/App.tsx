@@ -122,9 +122,9 @@ function App() {
       setAccessToken(data.access_token);
       oauthSession.clear();
       navigate(data.is_new_user ? 'onboarding' : 'home');
-    } catch {
+    } catch (error) {
       oauthSession.clear();
-      setLoginError('로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setLoginError(messageForLoginError(error));
       setScreen('login');
     }
   };
@@ -550,6 +550,24 @@ function isInsideSeoul(lat: number, lng: number) {
     lng >= SEOUL_BBOX.minLng &&
     lng <= SEOUL_BBOX.maxLng
   );
+}
+
+function messageForLoginError(error: unknown): string {
+  if (error instanceof ApiError) {
+    const serverMessage = error.message && !error.message.startsWith('API request failed')
+      ? error.message
+      : undefined;
+
+    if (serverMessage) {
+      return serverMessage;
+    }
+
+    if (error.status === 400) {
+      return '로그인 정보를 확인할 수 없습니다. 다시 시도해주세요.';
+    }
+  }
+
+  return '로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
 }
 
 function messageForCreateError(error: unknown): string {
