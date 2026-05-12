@@ -2,7 +2,7 @@ import { Bell, ChevronRight, LogOut, Moon, Settings } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, Header } from '../components/ui';
 import { userApi } from '../services/api';
-import type { UserProfile, UserProfileType, UserSettings } from '../types/domain';
+import type { RiskWeights, UserProfile, UserProfileType, UserSettings } from '../types/domain';
 
 const profileLabel: Record<UserProfileType, string> = {
   SINGLE: '청년 1인 가구',
@@ -11,6 +11,36 @@ const profileLabel: Record<UserProfileType, string> = {
 };
 
 const profileOrder: UserProfileType[] = ['SINGLE', 'COUPLE', 'FAMILY'];
+
+const profileWeightPresets: Record<UserProfileType, RiskWeights> = {
+  SINGLE: {
+    security: 30,
+    noise: 25,
+    medical: 15,
+    flood: 15,
+    congestion: 15,
+  },
+  COUPLE: {
+    security: 25,
+    noise: 25,
+    medical: 15,
+    flood: 15,
+    congestion: 20,
+  },
+  FAMILY: {
+    security: 30,
+    noise: 15,
+    medical: 25,
+    flood: 15,
+    congestion: 15,
+  },
+};
+
+const profileWeightSummary: Record<UserProfileType, string> = {
+  SINGLE: '안전·소음 가중치 적용 중',
+  COUPLE: '소음·혼잡 가중치 적용 중',
+  FAMILY: '안전·의료 가중치 적용 중',
+};
 
 export function MyPage({ token, onLogout }: { token: string | null; onLogout: () => Promise<void> }) {
   const [profile, setProfile] = useState<UserProfile>({
@@ -23,6 +53,7 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
     darkMode: 'SYSTEM',
   });
   const [statusMessage, setStatusMessage] = useState('');
+  const [isUpdatingWeights, setIsUpdatingWeights] = useState(false);
   const nickname = profile.nickname || '사용자';
   const currentProfileType = profileLabel[profile.profileType] ? profile.profileType : 'SINGLE';
 
@@ -52,20 +83,29 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
   }, [token]);
 
   const updateProfileType = async () => {
-    const currentIndex = profileOrder.indexOf(profile.profileType);
+    const currentIndex = profileOrder.indexOf(currentProfileType);
     const nextType = profileOrder[(currentIndex + 1) % profileOrder.length];
+    const previousType = currentProfileType;
+
     setProfile((current) => ({ ...current, profileType: nextType }));
+    setStatusMessage('');
 
     if (!token) {
       return;
     }
 
+    setIsUpdatingWeights(true);
+
     try {
       const nextProfile = await userApi.updateProfileType(token, nextType);
+      await userApi.updateWeights(token, profileWeightPresets[nextType]);
       setProfile(nextProfile);
       setStatusMessage('가중치가 재설정되었습니다.');
     } catch {
+      setProfile((current) => ({ ...current, profileType: previousType }));
       setStatusMessage('가중치 재설정 API 요청에 실패했습니다.');
+    } finally {
+      setIsUpdatingWeights(false);
     }
   };
 
@@ -134,7 +174,7 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
         <div className="avatar">{nickname.slice(0, 1)}</div>
         <div>
           <h1>{nickname}님의 집:착</h1>
-          <p>{profileLabel[currentProfileType]} · 안전과 소음 가중</p>
+          <p>{profileLabel[currentProfileType]} · {profileWeightSummary[currentProfileType]}</p>
         </div>
         <button onClick={refreshProfile}>설정</button>
       </Card>
@@ -146,9 +186,11 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
         <div className="avatar small">1</div>
         <div>
           <strong>{profileLabel[currentProfileType]}</strong>
-          <small>안전·소음·의료 가중치 적용 중</small>
+          <small>{profileWeightSummary[currentProfileType]}</small>
         </div>
-        <button onClick={updateProfileType}>변경</button>
+        <button onClick={updateProfileType} disabled={isUpdatingWeights}>
+          {isUpdatingWeights ? '저장 중' : '변경'}
+        </button>
       </Card>
 
       <MenuSection
