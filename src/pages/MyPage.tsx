@@ -23,6 +23,8 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
     darkMode: 'SYSTEM',
   });
   const [statusMessage, setStatusMessage] = useState('');
+  const nickname = profile.nickname || '사용자';
+  const currentProfileType = profileLabel[profile.profileType] ? profile.profileType : 'SINGLE';
 
   useEffect(() => {
     if (!token) {
@@ -129,10 +131,10 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
       <Header title="마이페이지" action={<span />} />
 
       <Card className="user-card">
-        <div className="avatar">{profile.nickname.slice(0, 1)}</div>
+        <div className="avatar">{nickname.slice(0, 1)}</div>
         <div>
-          <h1>{profile.nickname}님의 집:착</h1>
-          <p>{profileLabel[profile.profileType]} · 안전과 소음 가중</p>
+          <h1>{nickname}님의 집:착</h1>
+          <p>{profileLabel[currentProfileType]} · 안전과 소음 가중</p>
         </div>
         <button onClick={refreshProfile}>설정</button>
       </Card>
@@ -143,7 +145,7 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
       <Card className="profile-summary">
         <div className="avatar small">1</div>
         <div>
-          <strong>{profileLabel[profile.profileType]}</strong>
+          <strong>{profileLabel[currentProfileType]}</strong>
           <small>안전·소음·의료 가중치 적용 중</small>
         </div>
         <button onClick={updateProfileType}>변경</button>

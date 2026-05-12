@@ -58,17 +58,21 @@ export const userApi = {
 };
 
 function normalizeUserProfile(response: unknown): UserProfile {
-  const record = response && typeof response === 'object' ? (response as Record<string, unknown>) : {};
+  const root = objectValue(response);
+  const record = optionalObjectValue(root.profile) ?? optionalObjectValue(root.user) ?? root;
+  const typeSource = root.profileType ?? root.user_type ?? root.user_type_id ?? record.profileType ?? record.user_type ?? record.user_type_id;
+  const nickname = stringValue(record.nickname ?? record.name ?? record.email ?? '사용자') || '사용자';
 
   return {
     id: stringValue(record.id ?? record.user_id ?? record.userId ?? 'user'),
-    nickname: stringValue(record.nickname ?? record.name ?? '사용자'),
-    profileType: profileType(record.profileType ?? record.user_type ?? record.user_type_id),
+    nickname,
+    profileType: profileType(typeSource),
   };
 }
 
 function normalizeSettings(response: unknown): UserSettings {
-  const record = response && typeof response === 'object' ? (response as Record<string, unknown>) : {};
+  const root = objectValue(response);
+  const record = optionalObjectValue(root.settings) ?? root;
 
   return {
     notificationsEnabled: booleanValue(record.notificationsEnabled ?? record.noti_enabled, true),
@@ -106,4 +110,12 @@ function booleanValue(value: unknown, fallback: boolean) {
 
 function stringValue(value: unknown) {
   return typeof value === 'string' ? value : value == null ? '' : String(value);
+}
+
+function objectValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function optionalObjectValue(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
 }

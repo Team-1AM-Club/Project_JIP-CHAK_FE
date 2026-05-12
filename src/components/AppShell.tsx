@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { BottomNav } from './ui';
+import { ErrorBoundary } from './ErrorBoundary';
 import type { Screen } from '../types/domain';
 
 export function AppShell({
@@ -16,7 +17,7 @@ export function AppShell({
   return (
     <main className="app-shell">
       <section className={`mobile-frame ${bottomNav ? 'has-bottom-nav' : ''}`}>
-        {children}
+        <ErrorBoundary>{children}</ErrorBoundary>
         {bottomNav && <BottomNav active={active} navigate={navigate} />}
       </section>
     </main>
