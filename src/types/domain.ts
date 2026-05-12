@@ -38,18 +38,43 @@ export interface CompareResult {
   recommendation: string;
 }
 
+export type SocialProviderWire = 'kakao' | 'naver' | 'google';
+
 export interface LoginRequest {
-  provider: SocialProvider;
+  provider: SocialProviderWire;
+  code: string;
+  redirect_uri: string;
 }
 
-export type AuthLoginResponse =
-  | string
-  | {
-  accessToken: string;
-  refreshToken?: string;
-  redirectUrl?: string;
-  authorizationUrl?: string;
-};
+export interface AuthSubscription {
+  plan: 'FREE' | 'PRO';
+  expires_at: string | null;
+}
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  profile_image?: string;
+  provider: SocialProviderWire;
+  created_at: string;
+  has_preferences: boolean;
+  subscription: AuthSubscription;
+}
+
+export interface AuthLoginData {
+  is_new_user: boolean;
+  user: AuthUser;
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  refresh_expires_in?: number;
+}
+
+export type AuthLoginErrorCode =
+  | 'INVALID_INPUT_VALUE'
+  | 'LOGIN_FAILED'
+  | 'INTERNAL_SERVER_ERROR';
 
 export interface UserProfile {
   id: string;

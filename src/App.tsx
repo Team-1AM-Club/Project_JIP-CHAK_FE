@@ -9,6 +9,13 @@ import { Onboarding } from './pages/Onboarding';
 import { SearchPage } from './pages/SearchPage';
 import { addressApi, authApi, userApi } from './services/api';
 import { authStorage } from './services/authStorage';
+import {
+  buildAuthorizeUrl,
+  getProviderFromCallbackPath,
+  getRedirectUri,
+  oauthSession,
+  providerToWire,
+} from './services/oauth';
 import type { AddressCandidate, CompareResult, Screen, SocialProvider, UserProfileType } from './types/domain';
 
 function App() {
@@ -21,8 +28,15 @@ function App() {
   const [currentCompare, setCurrentCompare] = useState<CompareResult | null>(null);
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState('');
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
+    const callbackProvider = getProviderFromCallbackPath(window.location.pathname);
+    if (callbackProvider) {
+      handleOAuthCallback(callbackProvider);
+      return;
+    }
+
     const storedAccessToken = authStorage.getAccessToken();
     const refreshToken = authStorage.getRefreshToken();
 
@@ -38,19 +52,47 @@ function App() {
 
     authApi
       .reissue(refreshToken)
-      .then((tokens) => {
-        if (typeof tokens === 'string') {
-          return;
-        }
-
-        authStorage.saveTokens(tokens);
-        setAccessToken(tokens.accessToken);
+      .then((data) => {
+        authStorage.saveTokens(data);
+        setAccessToken(data.access_token);
         setScreen('home');
       })
       .catch(() => {
         authStorage.clear();
       });
   }, []);
+
+  const handleOAuthCallback = async (provider: SocialProvider) => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const errorParam = params.get('error');
+
+    window.history.replaceState({}, '', '/');
+
+    if (errorParam || !code) {
+      oauthSession.clear();
+      setLoginError(errorParam ? '소셜 로그인이 취소되었습니다.' : '로그인 정보를 확인할 수 없습니다.');
+      setScreen('login');
+      return;
+    }
+
+    try {
+      const data = await authApi.login({
+        provider: providerToWire(provider),
+        code,
+        redirect_uri: getRedirectUri(provider),
+      });
+
+      authStorage.saveTokens(data);
+      setAccessToken(data.access_token);
+      oauthSession.clear();
+      navigate(data.is_new_user ? 'onboarding' : 'home');
+    } catch {
+      oauthSession.clear();
+      setLoginError('로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setScreen('login');
+    }
+  };
 
   useEffect(() => {
     if (screen !== 'compare') {
@@ -83,26 +125,9 @@ function App() {
   };
 
   const handleLogin = async (provider: SocialProvider) => {
-    const result = await authApi.login(provider);
-    const redirectUrl = typeof result === 'string' ? result : result.redirectUrl ?? result.authorizationUrl;
-
-    if (redirectUrl) {
-      window.location.assign(redirectUrl);
-      return;
-    }
-
-    if (typeof result === 'string') {
-      navigate('onboarding');
-      return;
-    }
-
-    authStorage.saveTokens(result);
-
-    if (result.accessToken) {
-      setAccessToken(result.accessToken);
-    }
-
-    navigate('onboarding');
+    setLoginError('');
+    const authorizeUrl = buildAuthorizeUrl(provider);
+    window.location.assign(authorizeUrl);
   };
 
   const completeOnboarding = async () => {
@@ -177,7 +202,7 @@ function App() {
 
   return (
     <AppShell active={screen} navigate={navigate} bottomNav={bottomNav}>
-      {screen === 'login' && <LoginPage onLogin={handleLogin} />}
+      {screen === 'login' && <LoginPage onLogin={handleLogin} externalErrorMessage={loginError} />}
       {screen === 'onboarding' && (
         <Onboarding
           step={onboardingStep}

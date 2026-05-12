@@ -25,7 +25,12 @@ const providers: Array<{
   },
 ];
 
-export function LoginPage({ onLogin }: { onLogin: (provider: SocialProvider) => Promise<void> }) {
+interface LoginPageProps {
+  onLogin: (provider: SocialProvider) => Promise<void>;
+  externalErrorMessage?: string;
+}
+
+export function LoginPage({ onLogin, externalErrorMessage }: LoginPageProps) {
   const [pendingProvider, setPendingProvider] = useState<SocialProvider | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -41,6 +46,8 @@ export function LoginPage({ onLogin }: { onLogin: (provider: SocialProvider) => 
       setPendingProvider(null);
     }
   };
+
+  const displayedError = errorMessage || externalErrorMessage || '';
 
   return (
     <div className="screen login-screen">
@@ -65,7 +72,7 @@ export function LoginPage({ onLogin }: { onLogin: (provider: SocialProvider) => 
               </button>
             ))}
           </div>
-          {errorMessage && <p className="login-error">{errorMessage}</p>}
+          {displayedError && <p className="login-error">{displayedError}</p>}
         </Card>
       </div>
 

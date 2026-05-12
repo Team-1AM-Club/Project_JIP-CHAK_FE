@@ -1,7 +1,10 @@
-import type { AuthLoginResponse } from '../types/domain';
-
 const ACCESS_TOKEN_KEY = 'jipchak.accessToken';
 const REFRESH_TOKEN_KEY = 'jipchak.refreshToken';
+
+interface TokenPair {
+  access_token: string;
+  refresh_token: string;
+}
 
 export const authStorage = {
   getAccessToken() {
@@ -12,18 +15,9 @@ export const authStorage = {
     return window.localStorage.getItem(REFRESH_TOKEN_KEY);
   },
 
-  saveTokens(tokens: AuthLoginResponse) {
-    if (typeof tokens === 'string') {
-      return;
-    }
-
-    if (tokens.accessToken) {
-      window.localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-    }
-
-    if (tokens.refreshToken) {
-      window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
-    }
+  saveTokens(tokens: TokenPair) {
+    window.localStorage.setItem(ACCESS_TOKEN_KEY, tokens.access_token);
+    window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token);
   },
 
   clear() {
