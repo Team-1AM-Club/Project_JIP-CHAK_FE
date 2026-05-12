@@ -1610,7 +1610,7 @@ button {
 
 .user-card {
   display: grid;
-  grid-template-columns: 54px 1fr 58px;
+  grid-template-columns: 54px 1fr 86px;
   gap: 12px;
   align-items: center;
   padding: 16px;
@@ -1689,6 +1689,117 @@ button {
   margin-top: 4px;
   color: var(--color-ink-muted);
   font-size: 12px;
+}
+
+.weight-settings-screen {
+  padding-bottom: 28px;
+}
+
+.weight-profile-card {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+}
+
+.weight-profile-card span {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.weight-profile-card h1 {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 19px;
+}
+
+.weight-profile-card p {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.weight-editor-card {
+  display: grid;
+  gap: 18px;
+  margin-top: 14px;
+  padding: 18px;
+}
+
+.weight-slider-row {
+  display: grid;
+  gap: 8px;
+}
+
+.weight-slider-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.weight-slider-head strong {
+  color: var(--color-ink);
+  font-size: 15px;
+}
+
+.weight-slider-head em {
+  color: var(--color-primary);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.weight-slider-row small {
+  color: var(--color-ink-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.weight-slider-row input[type='range'] {
+  width: 100%;
+  accent-color: var(--color-primary);
+}
+
+.weight-total-card {
+  display: grid;
+  gap: 4px;
+  margin-top: 14px;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.weight-total-card.valid {
+  background: rgba(59, 144, 110, 0.1);
+  color: var(--color-safe);
+}
+
+.weight-total-card.invalid {
+  background: rgba(212, 90, 74, 0.1);
+  color: var(--color-alert);
+}
+
+.weight-total-card strong {
+  font-size: 13px;
+}
+
+.weight-total-card span {
+  color: var(--color-ink-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.weight-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.weight-actions .button {
+  width: 100%;
+  padding: 0 12px;
+  font-size: 13px;
 }
 
 .menu-card {

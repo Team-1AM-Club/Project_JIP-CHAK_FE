@@ -54,11 +54,13 @@ export function MyPage({
   onLogout,
   onWithdraw,
   onWithdrawalComplete,
+  onOpenWeightSettings,
 }: {
   token: string | null;
   onLogout: () => Promise<void>;
   onWithdraw: () => Promise<AccountWithdrawalResult>;
   onWithdrawalComplete: () => void;
+  onOpenWeightSettings: () => void;
 }) {
   const [profile, setProfile] = useState<UserProfile>({
     id: 'local',
@@ -225,7 +227,7 @@ export function MyPage({
           <h1>{nickname}님의 집:착</h1>
           <p>{profileLabel[currentProfileType]} · {profileWeightSummary[currentProfileType]}</p>
         </div>
-        <button onClick={refreshProfile}>설정</button>
+        <button onClick={onOpenWeightSettings}>가중치 설정</button>
       </Card>
 
       {statusMessage && <p className="inline-status">{statusMessage}</p>}
