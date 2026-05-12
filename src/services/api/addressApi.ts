@@ -1,4 +1,4 @@
-import type { AddressCandidate, CompareData } from '../../types/domain';
+import type { AddressCandidate } from '../../types/domain';
 import { apiRequest } from './apiClient';
 import { apiEndpoints } from './endpoints';
 
@@ -19,13 +19,6 @@ export const addressApi = {
     });
 
     return normalizeAddressCandidates(response);
-  },
-
-  compare(reportIds: string[], token?: string | null) {
-    return apiRequest<CompareData>(apiEndpoints.addresses.compare, {
-      query: { report_ids: reportIds.join(',') },
-      token: token ?? undefined,
-    });
   },
 };
 

@@ -173,7 +173,7 @@ function App() {
 
     let cancelled = false;
     setCompareLoading(true);
-    addressApi
+    reportApi
       .compare(compareReportIds, accessToken)
       .then((data) => {
         if (!cancelled) setCurrentCompare(data);
@@ -614,9 +614,21 @@ function bookmarkPropertyToSavedPreview(item: BookmarkProperty): SavedReportPrev
     detail: item.description,
     score: item.score,
     grade: gradeFromLabel(item.grade) ?? gradeFromScoreStatus(item.score_status),
-    savedAtLabel: item.saved_at,
+    savedAtLabel: formatSavedAt(item.saved_at),
     isBookmarked: item.bookmarked,
   };
+}
+
+function formatSavedAt(raw: string): string {
+  if (!raw) return '';
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return raw;
+  const yyyy = parsed.getFullYear();
+  const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+  const dd = String(parsed.getDate()).padStart(2, '0');
+  const hh = String(parsed.getHours()).padStart(2, '0');
+  const min = String(parsed.getMinutes()).padStart(2, '0');
+  return `${yyyy}.${mm}.${dd} ${hh}:${min}`;
 }
 
 function gradeFromLabel(label: GradeLabel | undefined): Grade | undefined {

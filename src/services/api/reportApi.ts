@@ -1,5 +1,6 @@
 import type {
   AnalysisReport,
+  CompareData,
   CongestionRiskDetail,
   CreateReportPayload,
   CreateReportResult,
@@ -60,6 +61,13 @@ export const reportApi = {
     return apiRequest<CongestionRiskDetail>(apiEndpoints.reports.congestion(reportId), {
       method: 'GET',
       token: token ?? undefined,
+    });
+  },
+  compare(reportIds: string[], token?: string | null) {
+    return apiRequest<CompareData>(apiEndpoints.reports.compare, {
+      method: 'GET',
+      token: token ?? undefined,
+      query: { report_ids: reportIds.join(',') },
     });
   },
 };
