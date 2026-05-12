@@ -101,6 +101,7 @@ export interface UserProfile {
   id: string;
   nickname: string;
   profileType: UserProfileType;
+  isCustomized: boolean;
 }
 
 export interface UserSettings {

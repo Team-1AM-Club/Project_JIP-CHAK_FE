@@ -66,6 +66,7 @@ export function MyPage({
     id: 'local',
     nickname: '지수',
     profileType: getStoredProfileType() ?? 'SINGLE',
+    isCustomized: false,
   });
   const [settings, setSettings] = useState<UserSettings>({
     notificationsEnabled: true,
@@ -78,6 +79,7 @@ export function MyPage({
   const [withdrawalMessage, setWithdrawalMessage] = useState('');
   const nickname = profile.nickname || '사용자';
   const currentProfileType = profileLabel[profile.profileType] ? profile.profileType : 'SINGLE';
+  const weightSummary = profile.isCustomized ? '개인 가중치 적용중' : profileWeightSummary[currentProfileType];
 
   useEffect(() => {
     if (!token) {
@@ -125,7 +127,7 @@ export function MyPage({
     try {
       const nextProfile = await userApi.updateProfileType(token, nextType);
       await userApi.updateWeights(token, profileWeightPresets[nextType]);
-      setProfile({ ...nextProfile, profileType: nextType });
+      setProfile({ ...nextProfile, profileType: nextType, isCustomized: false });
       setStatusMessage('가중치가 재설정되었습니다.');
     } catch {
       storeProfileType(previousType);
@@ -225,9 +227,9 @@ export function MyPage({
         <div className="avatar">{nickname.slice(0, 1)}</div>
         <div>
           <h1>{nickname}님의 집:착</h1>
-          <p>{profileLabel[currentProfileType]} · {profileWeightSummary[currentProfileType]}</p>
+          <p>{profileLabel[currentProfileType]} · {weightSummary}</p>
         </div>
-        <button onClick={onOpenWeightSettings}>가중치 설정</button>
+        <button onClick={onOpenWeightSettings}>설정</button>
       </Card>
 
       {statusMessage && <p className="inline-status">{statusMessage}</p>}
@@ -237,7 +239,7 @@ export function MyPage({
         <div className="avatar small">1</div>
         <div>
           <strong>{profileLabel[currentProfileType]}</strong>
-          <small>{profileWeightSummary[currentProfileType]}</small>
+          <small>{weightSummary}</small>
         </div>
         <button onClick={updateProfileType} disabled={isUpdatingWeights}>
           {isUpdatingWeights ? '저장 중' : '변경'}

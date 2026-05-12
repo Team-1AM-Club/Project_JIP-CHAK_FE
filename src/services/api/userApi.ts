@@ -100,6 +100,7 @@ function normalizeUserProfile(response: unknown): UserProfile {
     id: stringValue(record.id ?? record.user_id ?? record.userId ?? 'user'),
     nickname,
     profileType: profileType(typeSource),
+    isCustomized: booleanValue(currentUserType?.is_customized ?? root.is_customized ?? record.is_customized, false),
   };
 }
 

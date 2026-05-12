@@ -66,7 +66,7 @@ export function WeightSettingsPage({
     [weights],
   );
   const canSave = total === 100 && !isLoading && !isSaving;
-  const modeLabel = profile.isCustomized ? '직접 설정한 가중치 적용 중' : profile.profileTypeDescription;
+  const modeLabel = profile.isCustomized ? '개인 가중치 적용중' : profile.profileTypeDescription;
 
   useEffect(() => {
     if (!token) {
