@@ -88,7 +88,7 @@ export function ReportPage({ reportId, token, onBack }: ReportPageProps) {
         </div>
       </Card>
       <Card className="risk-radar-card">
-        <RiskRadar risks={risks} />
+        <RiskRadar risks={risks} centerScore={report.total_score} />
         <div className="risk-list">
           {risks.map((risk) => (
             <button key={risk.type} type="button">
@@ -112,6 +112,7 @@ function gradeFromLabel(label: GradeLabel): Grade {
     case '주의':
       return 'CAUTION';
     case '경고':
+    case '위험':
       return 'DANGER';
     default:
       return 'NORMAL';

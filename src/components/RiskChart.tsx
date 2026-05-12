@@ -1,6 +1,6 @@
 import type { RiskScore } from '../types/domain';
 
-export function RiskRadar({ risks }: { risks: RiskScore[] }) {
+export function RiskRadar({ risks, centerScore }: { risks: RiskScore[]; centerScore?: number }) {
   const points = risks
     .map((risk, index) => {
       const angle = -90 + index * (360 / risks.length);
@@ -23,7 +23,7 @@ export function RiskRadar({ risks }: { risks: RiskScore[] }) {
           return <circle key={risk.type} cx={x} cy={y} r="1.7" className="radar-dot" />;
         })}
       </svg>
-      <strong className="radar-score">73</strong>
+      {centerScore !== undefined && <strong className="radar-score">{centerScore}</strong>}
     </div>
   );
 }

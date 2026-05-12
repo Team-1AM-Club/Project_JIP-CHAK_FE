@@ -1584,6 +1584,23 @@ button {
   min-width: 0;
 }
 
+.bookmark-toggle {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-primary);
+  padding: 0;
+}
+
+.bookmark-toggle:disabled {
+  cursor: wait;
+  opacity: 0.45;
+}
+
 .saved-row strong,
 .saved-row small {
   overflow: hidden;

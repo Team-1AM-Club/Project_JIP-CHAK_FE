@@ -213,7 +213,7 @@ export type RiskTypeWire =
   | 'congestion'
   | (string & {});
 
-export type GradeLabel = '안심' | '양호' | '주의' | '경고' | (string & {});
+export type GradeLabel = '안심' | '양호' | '주의' | '경고' | '위험' | (string & {});
 
 export interface AnalysisCategory {
   type: RiskTypeWire;
@@ -472,4 +472,77 @@ export type RiskDetailErrorCode =
   | 'REGION_DATA_NOT_FOUND'
   | 'EXTERNAL_API_ERROR'
   | 'ANALYSIS_FAILED'
+  | 'INTERNAL_SERVER_ERROR';
+
+export type BookmarkFilterStatus = 'ALL' | 'SAFE' | 'CAUTION' | 'RISK';
+export type ScoreStatus = 'SAFE' | 'CAUTION' | 'RISK';
+
+export interface BookmarkFilterCounts {
+  total_cnt: number;
+  safe_cnt: number;
+  caution_cnt: number;
+  risk_cnt: number;
+}
+
+export interface BookmarkProperty {
+  property_id: number;
+  report_id: number;
+  address: string;
+  description: string;
+  score: number;
+  grade: GradeLabel;
+  score_status: ScoreStatus;
+  tags: string[];
+  bookmarked: boolean;
+  saved_at: string;
+}
+
+export interface BookmarkPropertiesData {
+  filter_counts: BookmarkFilterCounts;
+  content: BookmarkProperty[];
+  page: number;
+  size: number;
+  total_elements: number;
+}
+
+export interface BookmarkPropertiesQuery {
+  status?: BookmarkFilterStatus;
+  page?: number;
+  size?: number;
+}
+
+export type BookmarkPropertiesErrorCode =
+  | 'INVALID_INPUT_VALUE'
+  | 'INVALID_TOKEN'
+  | 'EXPIRED_TOKEN'
+  | 'INTERNAL_SERVER_ERROR';
+
+export interface SavePropertyPayload {
+  property_id: number;
+  report_id?: number;
+}
+
+export interface SavePropertyData {
+  property_id: number;
+  report_id: number;
+  bookmarked: boolean;
+}
+
+export type SavePropertyErrorCode =
+  | 'PROPERTY_ALREADY_BOOKMARKED'
+  | 'INVALID_INPUT_VALUE'
+  | 'INVALID_TOKEN'
+  | 'EXPIRED_TOKEN'
+  | 'INTERNAL_SERVER_ERROR';
+
+export interface DeletePropertyData {
+  property_id: number;
+  bookmarked: false;
+}
+
+export type DeletePropertyErrorCode =
+  | 'PROPERTY_NOT_BOOKMARKED'
+  | 'INVALID_INPUT_VALUE'
+  | 'INVALID_TOKEN'
+  | 'EXPIRED_TOKEN'
   | 'INTERNAL_SERVER_ERROR';

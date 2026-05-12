@@ -23,9 +23,13 @@ import {
 import type {
   AddressCandidate,
   AccountWithdrawalResult,
+  BookmarkProperty,
   CompareResult,
+  Grade,
+  GradeLabel,
   RecentAddressSummary,
   SavedReportPreview,
+  ScoreStatus,
   Screen,
   SocialProvider,
   UserProfileType,
@@ -52,6 +56,8 @@ function App() {
   const [isCreatingReport, setIsCreatingReport] = useState(false);
   const [createReportError, setCreateReportError] = useState('');
   const [selectedDongCode, setSelectedDongCode] = useState<string | null>(null);
+  const [bookmarkPendingId, setBookmarkPendingId] = useState<string | null>(null);
+  const [savedListError, setSavedListError] = useState('');
   const mapSearchTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -138,10 +144,10 @@ function App() {
     let ignore = false;
 
     bookmarkApi
-      .getProperties(accessToken)
-      .then((reports) => {
+      .getProperties({}, accessToken)
+      .then((data) => {
         if (!ignore) {
-          setSavedReports(reports);
+          setSavedReports(data.content.map(bookmarkPropertyToSavedPreview));
         }
       })
       .catch(() => {
@@ -361,6 +367,30 @@ function App() {
     navigate('home');
   };
 
+  const handleToggleSavedBookmark = async (id: string) => {
+    if (!accessToken || bookmarkPendingId) {
+      return;
+    }
+
+    const previous = savedReports;
+    setBookmarkPendingId(id);
+    setSavedListError('');
+    setSavedReports(previous.filter((item) => item.id !== id));
+
+    try {
+      await bookmarkApi.deleteProperty(id, accessToken);
+    } catch (e) {
+      if (e instanceof ApiError && e.code === 'PROPERTY_NOT_BOOKMARKED') {
+        // 서버 상태가 이미 해제됨 — 낙관적 제거 유지
+      } else {
+        setSavedReports(previous);
+        setSavedListError(messageForDeleteBookmarkError(e));
+      }
+    } finally {
+      setBookmarkPendingId(null);
+    }
+  };
+
   const handleAnalysisCancelled = () => {
     setPendingTaskId(null);
     setPendingTaskEta(null);
@@ -423,6 +453,8 @@ function App() {
     setPendingAnalysisAddress(null);
     setCurrentReportId(null);
     setCreateReportError('');
+    setBookmarkPendingId(null);
+    setSavedListError('');
     navigate('login');
   };
 
@@ -460,7 +492,14 @@ function App() {
           next={completeOnboarding}
         />
       )}
-      {screen === 'saved' && <SavedPage savedReports={savedReports} />}
+      {screen === 'saved' && (
+        <SavedPage
+          savedReports={savedReports}
+          onToggleBookmark={handleToggleSavedBookmark}
+          pendingBookmarkId={bookmarkPendingId}
+          errorMessage={savedListError}
+        />
+      )}
       {screen === 'home' && (
         <HomePage navigate={navigate} recentAddresses={recentAddresses} savedReports={savedReports} />
       )}
@@ -522,6 +561,48 @@ function App() {
   );
 }
 
+function bookmarkPropertyToSavedPreview(item: BookmarkProperty): SavedReportPreview {
+  return {
+    id: String(item.property_id),
+    reportId: String(item.report_id),
+    address: item.address,
+    detail: item.description,
+    score: item.score,
+    grade: gradeFromLabel(item.grade) ?? gradeFromScoreStatus(item.score_status),
+    savedAtLabel: item.saved_at,
+    isBookmarked: item.bookmarked,
+  };
+}
+
+function gradeFromLabel(label: GradeLabel | undefined): Grade | undefined {
+  switch (label) {
+    case '안심':
+      return 'SAFE';
+    case '양호':
+      return 'NORMAL';
+    case '주의':
+      return 'CAUTION';
+    case '경고':
+    case '위험':
+      return 'DANGER';
+    default:
+      return undefined;
+  }
+}
+
+function gradeFromScoreStatus(status: ScoreStatus | undefined): Grade | undefined {
+  switch (status) {
+    case 'SAFE':
+      return 'SAFE';
+    case 'CAUTION':
+      return 'CAUTION';
+    case 'RISK':
+      return 'DANGER';
+    default:
+      return undefined;
+  }
+}
+
 function createCoordinateAddress(lat: number, lng: number): AddressCandidate {
   return {
     id: `coord_${lat.toFixed(6)}_${lng.toFixed(6)}`,
@@ -568,6 +649,22 @@ function messageForLoginError(error: unknown): string {
   }
 
   return '로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+}
+
+function messageForDeleteBookmarkError(error: unknown): string {
+  if (!(error instanceof ApiError)) {
+    return '저장 해제 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
+  }
+
+  switch (error.code) {
+    case 'PROPERTY_NOT_BOOKMARKED':
+      return '이미 저장이 해제된 매물이에요.';
+    case 'INVALID_TOKEN':
+    case 'EXPIRED_TOKEN':
+      return '로그인이 만료됐어요. 다시 로그인해 주세요.';
+    default:
+      return error.message || '저장 해제 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
+  }
 }
 
 function messageForCreateError(error: unknown): string {
