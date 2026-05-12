@@ -16,6 +16,7 @@ export const apiEndpoints = {
     mapSearch: `${API_BASE_PATH}/addresses/map-search`,
   },
   reports: {
+    create: `${API_BASE_PATH}/reports`,
     compare: `${API_BASE_PATH}/reports/compare`,
   },
   bookmarks: {

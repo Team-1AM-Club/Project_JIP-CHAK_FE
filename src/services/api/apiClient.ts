@@ -10,6 +10,7 @@ export class ApiError extends Error {
     message: string,
     public readonly status: number,
     public readonly payload?: unknown,
+    public readonly code?: string,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -23,13 +24,21 @@ interface RequestOptions extends RequestInit {
 }
 
 export async function apiRequest<TResponse>(path: string, options: RequestOptions = {}): Promise<TResponse> {
-  return sendApiRequest<TResponse>(path, options);
+  return sendApiRequest<TResponse>(path, options, false, true);
+}
+
+export async function apiRequestEnvelope<TEnvelope>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<TEnvelope> {
+  return sendApiRequest<TEnvelope>(path, options, false, false);
 }
 
 async function sendApiRequest<TResponse>(
   path: string,
   options: RequestOptions,
   hasRetried = false,
+  unwrap = true,
 ): Promise<TResponse> {
   const { token, skipAuth = false, query, headers, body, ...init } = options;
   const url = new URL(path, API_ORIGIN || window.location.origin);
@@ -61,14 +70,41 @@ async function sendApiRequest<TResponse>(
       const refreshedToken = await reissueAccessToken();
 
       if (refreshedToken) {
-        return sendApiRequest<TResponse>(path, { ...options, token: refreshedToken }, true);
+        return sendApiRequest<TResponse>(path, { ...options, token: refreshedToken }, true, unwrap);
       }
     }
 
-    throw new ApiError(`API request failed: ${response.status}`, response.status, payload);
+    const errorInfo = extractErrorInfo(payload);
+    throw new ApiError(
+      errorInfo.message ?? `API request failed: ${response.status}`,
+      response.status,
+      payload,
+      errorInfo.code,
+    );
+  }
+
+  if (!unwrap) {
+    return payload as TResponse;
   }
 
   return unwrapApiPayload(payload) as TResponse;
+}
+
+function extractErrorInfo(payload: unknown): { code?: string; message?: string } {
+  if (!payload || typeof payload !== 'object') {
+    return {};
+  }
+
+  const error = (payload as { error?: unknown }).error;
+  if (!error || typeof error !== 'object') {
+    return {};
+  }
+
+  const record = error as Record<string, unknown>;
+  return {
+    code: typeof record.code === 'string' ? record.code : undefined,
+    message: typeof record.message === 'string' ? record.message : undefined,
+  };
 }
 
 async function reissueAccessToken() {

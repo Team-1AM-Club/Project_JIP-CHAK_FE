@@ -124,3 +124,45 @@ export type Screen =
   | 'map'
   | 'compare'
   | 'my';
+
+export type ReportSource = 'SEARCH' | 'MAP';
+
+export interface CreateReportPayload {
+  address: string;
+  road_addr?: string;
+  jibun_addr?: string;
+  lat: number;
+  lng: number;
+  dong_code?: string;
+  source: ReportSource;
+}
+
+export interface ReportReadyData {
+  report_id: string;
+  dong_code: string;
+  dong_name: string;
+  address: string;
+  total_score: number;
+  cached: true;
+  analyzed_at: string;
+}
+
+export interface ReportProcessingData {
+  task_id: string;
+  dong_code: string;
+  dong_name: string;
+  address: string;
+  estimated_seconds: number;
+  cached: false;
+}
+
+export type CreateReportEnvelope =
+  | { status: 'READY'; data: ReportReadyData }
+  | { status: 'PROCESSING'; data: ReportProcessingData };
+
+export type CreateReportErrorCode =
+  | 'INVALID_INPUT_VALUE'
+  | 'INVALID_LOCATION'
+  | 'INVALID_TOKEN'
+  | 'EXTERNAL_API_ERROR'
+  | 'ANALYSIS_FAILED';
