@@ -11,6 +11,7 @@ const profileLabel: Record<UserProfileType, string> = {
 };
 
 const profileOrder: UserProfileType[] = ['SINGLE', 'COUPLE', 'FAMILY'];
+const PROFILE_TYPE_STORAGE_KEY = 'jipchak.profileType';
 
 const profileWeightPresets: Record<UserProfileType, RiskWeights> = {
   SINGLE: {
@@ -46,7 +47,7 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
   const [profile, setProfile] = useState<UserProfile>({
     id: 'local',
     nickname: '지수',
-    profileType: 'SINGLE',
+    profileType: getStoredProfileType() ?? 'SINGLE',
   });
   const [settings, setSettings] = useState<UserSettings>({
     notificationsEnabled: true,
@@ -67,7 +68,10 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
     Promise.all([userApi.getMyProfile(token), userApi.getSettings(token)])
       .then(([nextProfile, nextSettings]) => {
         if (!ignore) {
-          setProfile(nextProfile);
+          setProfile({
+            ...nextProfile,
+            profileType: getStoredProfileType() ?? nextProfile.profileType,
+          });
           setSettings(nextSettings);
         }
       })
@@ -88,6 +92,7 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
     const previousType = currentProfileType;
 
     setProfile((current) => ({ ...current, profileType: nextType }));
+    storeProfileType(nextType);
     setStatusMessage('');
 
     if (!token) {
@@ -99,9 +104,10 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
     try {
       const nextProfile = await userApi.updateProfileType(token, nextType);
       await userApi.updateWeights(token, profileWeightPresets[nextType]);
-      setProfile(nextProfile);
+      setProfile({ ...nextProfile, profileType: nextType });
       setStatusMessage('가중치가 재설정되었습니다.');
     } catch {
+      storeProfileType(previousType);
       setProfile((current) => ({ ...current, profileType: previousType }));
       setStatusMessage('가중치 재설정 API 요청에 실패했습니다.');
     } finally {
@@ -202,6 +208,15 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
       />
     </div>
   );
+}
+
+function getStoredProfileType(): UserProfileType | null {
+  const value = window.localStorage.getItem(PROFILE_TYPE_STORAGE_KEY);
+  return value === 'SINGLE' || value === 'COUPLE' || value === 'FAMILY' ? value : null;
+}
+
+function storeProfileType(profileType: UserProfileType) {
+  window.localStorage.setItem(PROFILE_TYPE_STORAGE_KEY, profileType);
 }
 
 function MenuSection({
