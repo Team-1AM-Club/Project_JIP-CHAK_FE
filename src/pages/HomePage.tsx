@@ -1,8 +1,17 @@
-import { ArrowRight, BarChart2, Bell, Map } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { ArrowRight, BarChart2, Bell, Bookmark, ChevronRight, Map, MapPin } from 'lucide-react';
 import { Card, Header, IconButton } from '../components/ui';
-import type { Screen } from '../types/domain';
+import type { Grade, RecentAddressSummary, SavedReportPreview, Screen } from '../types/domain';
 
-export function HomePage({ navigate }: { navigate: (screen: Screen) => void }) {
+interface HomePageProps {
+  navigate: (screen: Screen) => void;
+  recentAddresses?: RecentAddressSummary[];
+  savedReports?: SavedReportPreview[];
+}
+
+export function HomePage({ navigate, recentAddresses = [], savedReports = [] }: HomePageProps) {
+  const hasHomeData = recentAddresses.length > 0 || savedReports.length > 0;
+
   return (
     <div className="screen home-screen">
       <Header
@@ -36,10 +45,92 @@ export function HomePage({ navigate }: { navigate: (screen: Screen) => void }) {
         </Card>
       </div>
 
-      <Card className="empty-home-card">
-        <strong>담당 범위 외 데이터는 표시하지 않습니다</strong>
-        <p>최근 본 주소, 분석 리포트, 저장 목록은 리포트/북마크 담당 API 연동 후 노출됩니다.</p>
-      </Card>
+      {recentAddresses.length > 0 && (
+        <HomeSection title="최근 본 주소" actionLabel="모두보기" onAction={() => navigate('search')}>
+          <div className="list-stack">
+            {recentAddresses.map((item) => (
+              <Card key={item.id} className="address-row">
+                <HomeScore score={item.score} grade={item.grade} fallback={<MapPin size={18} />} />
+                <div>
+                  <strong>{item.address}</strong>
+                  <small>
+                    {item.detail}
+                    {item.viewedAtLabel ? ` · ${item.viewedAtLabel}` : ''}
+                  </small>
+                </div>
+                <ChevronRight size={18} />
+              </Card>
+            ))}
+          </div>
+        </HomeSection>
+      )}
+
+      {savedReports.length > 0 && (
+        <HomeSection title="저장한 리포트" actionLabel={`${savedReports.length}개`} onAction={() => navigate('saved')}>
+          <div className="saved-preview">
+            {savedReports.slice(0, 2).map((item) => (
+              <Card key={item.id} className="saved-report-card">
+                <div className="saved-report-top">
+                  <HomeScore score={item.score} grade={item.grade} fallback={<Bookmark size={17} />} />
+                  {item.isBookmarked !== false && <Bookmark className="saved-report-mark" size={16} fill="currentColor" />}
+                </div>
+                <strong>{item.address}</strong>
+                <small>
+                  {item.detail}
+                  {item.savedAtLabel ? ` · ${item.savedAtLabel}` : ''}
+                </small>
+              </Card>
+            ))}
+          </div>
+        </HomeSection>
+      )}
+
+      {!hasHomeData && (
+        <Card className="empty-home-card">
+          <strong>담당 범위 외 데이터는 표시하지 않습니다</strong>
+          <p>최근 본 주소, 분석 리포트, 저장 목록은 리포트/북마크 담당 API 연동 후 노출됩니다.</p>
+        </Card>
+      )}
     </div>
   );
+}
+
+function HomeSection({
+  title,
+  actionLabel,
+  onAction,
+  children,
+}: {
+  title: string;
+  actionLabel: string;
+  onAction: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <section className="home-data-section">
+      <div className="section-title">
+        <h2>{title}</h2>
+        <button onClick={onAction}>
+          {actionLabel} <ChevronRight size={14} />
+        </button>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function HomeScore({
+  score,
+  grade,
+  fallback,
+}: {
+  score?: number;
+  grade?: Grade;
+  fallback: ReactNode;
+}) {
+  if (typeof score !== 'number') {
+    return <span className="home-score home-score-empty">{fallback}</span>;
+  }
+
+  return <span className={`home-score ${grade ? `grade-${grade.toLowerCase()}` : ''}`}>{score}</span>;
 }

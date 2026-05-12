@@ -217,6 +217,13 @@ button {
   font-size: 12px;
 }
 
+.section-title button {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 800;
+}
+
 .risk-badge {
   display: inline-flex;
   align-items: center;
@@ -264,7 +271,7 @@ button {
   right: 0;
   bottom: 0;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   padding: 10px 24px 18px;
   background: rgba(255, 255, 255, 0.94);
   border-top: 1px solid rgba(26, 37, 64, 0.08);
@@ -595,6 +602,37 @@ button {
   color: var(--color-primary);
 }
 
+.home-data-section {
+  margin-top: 18px;
+}
+
+.home-score {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-safe);
+  background: rgba(59, 144, 110, 0.13);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.home-score.grade-caution {
+  color: var(--color-watch);
+  background: rgba(216, 154, 42, 0.16);
+}
+
+.home-score.grade-danger {
+  color: var(--color-alert);
+  background: rgba(212, 90, 74, 0.13);
+}
+
+.home-score-empty {
+  color: var(--color-primary);
+  background: var(--color-coral-tint);
+}
+
 .list-stack {
   display: grid;
   gap: 10px;
@@ -624,6 +662,36 @@ button {
   display: grid;
   gap: 8px;
   padding: 14px;
+}
+
+.saved-report-card {
+  min-width: 0;
+}
+
+.saved-report-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.saved-report-mark {
+  color: var(--color-primary);
+}
+
+.saved-report-card strong,
+.saved-report-card small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-report-card strong {
+  font-size: 13px;
+}
+
+.saved-report-card small {
+  color: var(--color-ink-muted);
+  font-size: 11px;
 }
 
 .search-input,
