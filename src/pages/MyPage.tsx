@@ -1,4 +1,4 @@
-import { Bell, ChevronRight, LogOut, Moon } from 'lucide-react';
+import { Bell, ChevronRight, LogOut, Moon, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, Header } from '../components/ui';
 import { userApi } from '../services/api';
@@ -43,7 +43,15 @@ const profileWeightSummary: Record<UserProfileType, string> = {
   FAMILY: '안전·의료 가중치 적용 중',
 };
 
-export function MyPage({ token, onLogout }: { token: string | null; onLogout: () => Promise<void> }) {
+export function MyPage({
+  token,
+  onLogout,
+  onWithdraw,
+}: {
+  token: string | null;
+  onLogout: () => Promise<void>;
+  onWithdraw: () => Promise<void>;
+}) {
   const [profile, setProfile] = useState<UserProfile>({
     id: 'local',
     nickname: '지수',
@@ -55,6 +63,8 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
   });
   const [statusMessage, setStatusMessage] = useState('');
   const [isUpdatingWeights, setIsUpdatingWeights] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const nickname = profile.nickname || '사용자';
   const currentProfileType = profileLabel[profile.profileType] ? profile.profileType : 'SINGLE';
 
@@ -171,6 +181,23 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
     }
   };
 
+  const confirmWithdraw = async () => {
+    if (isWithdrawing) {
+      return;
+    }
+
+    setIsWithdrawing(true);
+    setStatusMessage('');
+
+    try {
+      await onWithdraw();
+    } catch {
+      setStatusMessage('회원탈퇴 요청에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      setIsWithdrawing(false);
+      setIsWithdrawOpen(false);
+    }
+  };
+
   return (
     <div className="screen my-screen">
       <Header title="마이페이지" action={<span />} />
@@ -206,6 +233,28 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
         onToggleDarkMode={cycleDarkMode}
         onLogout={onLogout}
       />
+
+      <div className="withdraw-action">
+        <button onClick={() => setIsWithdrawOpen(true)}>회원탈퇴</button>
+      </div>
+
+      {isWithdrawOpen && (
+        <div className="withdraw-modal-backdrop" role="presentation">
+          <div className="withdraw-modal" role="dialog" aria-modal="true" aria-labelledby="withdraw-title">
+            <span className="withdraw-icon">
+              <Trash2 size={24} />
+            </span>
+            <h2 id="withdraw-title">정말 탈퇴하시겠어요?</h2>
+            <p>탈퇴 버튼 선택 시, 계정은 삭제되며 복구되지 않습니다.</p>
+            <button className="withdraw-confirm" onClick={confirmWithdraw} disabled={isWithdrawing}>
+              {isWithdrawing ? '탈퇴 중' : '탈퇴'}
+            </button>
+            <button className="withdraw-cancel" onClick={() => setIsWithdrawOpen(false)} disabled={isWithdrawing}>
+              취소
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

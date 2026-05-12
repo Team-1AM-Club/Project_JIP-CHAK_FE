@@ -55,6 +55,13 @@ export const userApi = {
 
     return normalizeSettings(response);
   },
+
+  deleteMe(token: string) {
+    return apiRequest<void>(apiEndpoints.users.me, {
+      method: 'DELETE',
+      token,
+    });
+  },
 };
 
 function normalizeUserProfile(response: unknown): UserProfile {

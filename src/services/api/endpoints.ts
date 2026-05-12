@@ -10,6 +10,7 @@ export const apiEndpoints = {
     myProfile: `${API_BASE_PATH}/users/myprofile`,
     weights: `${API_BASE_PATH}/users/weights`,
     settings: `${API_BASE_PATH}/users/settings`,
+    me: `${API_BASE_PATH}/users/me`,
   },
   addresses: {
     search: `${API_BASE_PATH}/addresses/search`,

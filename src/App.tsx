@@ -361,6 +361,31 @@ function App() {
     navigate('login');
   };
 
+  const handleWithdraw = async () => {
+    if (!accessToken) {
+      await handleLogout();
+      return;
+    }
+
+    await userApi.deleteMe(accessToken);
+    authStorage.clear();
+    window.localStorage.removeItem('jipchak.profileType');
+    setAccessToken(null);
+    setOnboardingStep(0);
+    setSelectedAddress(null);
+    setCompareTargets([]);
+    setCurrentCompare(null);
+    setRecentAddresses([]);
+    setSavedReports([]);
+    setPendingTaskId(null);
+    setPendingTaskEta(null);
+    setPendingDongName(null);
+    setPendingAnalysisAddress(null);
+    setCurrentReportId(null);
+    setCreateReportError('');
+    navigate('login');
+  };
+
   const bottomNav = screen === 'saved' || screen === 'home' || screen === 'my';
 
   return (
@@ -416,7 +441,7 @@ function App() {
           navigate={navigate}
         />
       )}
-      {screen === 'my' && <MyPage token={accessToken} onLogout={handleLogout} />}
+      {screen === 'my' && <MyPage token={accessToken} onLogout={handleLogout} onWithdraw={handleWithdraw} />}
     </AppShell>
   );
 }
