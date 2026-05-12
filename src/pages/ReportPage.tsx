@@ -65,11 +65,7 @@ export function ReportPage({
   const handleToggleBookmark = async () => {
     if (!report || bookmarkPending || !token) return;
 
-    if (report.property_id === undefined) {
-      setBookmarkError('저장 정보를 받아오지 못했어요. 잠시 후 다시 시도해 주세요.');
-      return;
-    }
-
+    const propertyId = report.property_id ?? report.report_id;
     const next = !saved;
     setSaved(next);
     setBookmarkPending(true);
@@ -77,9 +73,9 @@ export function ReportPage({
 
     try {
       if (next) {
-        await bookmarkApi.saveProperty({ property_id: report.property_id }, token);
+        await bookmarkApi.saveProperty({ property_id: propertyId }, token);
       } else {
-        await bookmarkApi.deleteProperty(report.property_id, token);
+        await bookmarkApi.deleteProperty(propertyId, token);
       }
       onBookmarkChanged?.();
     } catch (e) {
@@ -119,7 +115,7 @@ export function ReportPage({
 
   const totalGrade = gradeFromLabel(report.grade);
   const risks: RiskScore[] = report.categories.map(categoryToRisk);
-  const canBookmark = Boolean(token) && report.property_id !== undefined;
+  const canBookmark = Boolean(token);
 
   return (
     <div className="screen">

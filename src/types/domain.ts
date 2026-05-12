@@ -240,7 +240,7 @@ export interface AnalysisScoreSource {
 
 export interface AnalysisReport {
   report_id: string;
-  property_id?: number;
+  property_id?: string | number;
   address: string;
   dong_code: string;
   total_score: number;
@@ -496,8 +496,8 @@ export interface BookmarkFilterCounts {
 }
 
 export interface BookmarkProperty {
-  property_id: number;
-  report_id: number;
+  property_id: string | number;
+  report_id: string | number;
   address: string;
   description: string;
   score: number;
@@ -529,13 +529,13 @@ export type BookmarkPropertiesErrorCode =
   | 'INTERNAL_SERVER_ERROR';
 
 export interface SavePropertyPayload {
-  property_id: number;
-  report_id?: number;
+  property_id: string | number;
+  report_id?: string | number;
 }
 
 export interface SavePropertyData {
-  property_id: number;
-  report_id: number;
+  property_id: string | number;
+  report_id: string | number;
   bookmarked: boolean;
 }
 
@@ -547,7 +547,7 @@ export type SavePropertyErrorCode =
   | 'INTERNAL_SERVER_ERROR';
 
 export interface DeletePropertyData {
-  property_id: number;
+  property_id: string | number;
   bookmarked: false;
 }
 
