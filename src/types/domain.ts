@@ -116,6 +116,14 @@ export interface RiskWeights {
   congestion: number;
 }
 
+export interface UserWeightProfile {
+  profileType: UserProfileType;
+  profileTypeName: string;
+  profileTypeDescription: string;
+  isCustomized: boolean;
+  weights: RiskWeights;
+}
+
 export interface AccountWithdrawalResult {
   userName: string;
   deletedAt: string;
@@ -132,6 +140,7 @@ export type Screen =
   | 'report'
   | 'detail'
   | 'compare'
+  | 'weights'
   | 'my';
 
 export type ReportSource = 'SEARCH' | 'MAP';

@@ -12,6 +12,7 @@ import { ReportPage } from './pages/ReportPage';
 import { RiskDetailPage } from './pages/RiskDetailPage';
 import { SavedPage } from './pages/SavedPage';
 import { SearchPage } from './pages/SearchPage';
+import { WeightSettingsPage } from './pages/WeightSettingsPage';
 import { ApiError, addressApi, authApi, bookmarkApi, reportApi, userApi } from './services/api';
 import { authStorage } from './services/authStorage';
 import {
@@ -574,12 +575,16 @@ function App() {
           navigate={navigate}
         />
       )}
+      {screen === 'weights' && (
+        <WeightSettingsPage token={accessToken} onBack={() => navigate('my')} />
+      )}
       {screen === 'my' && (
         <MyPage
           token={accessToken}
           onLogout={handleLogout}
           onWithdraw={handleWithdraw}
           onWithdrawalComplete={handleWithdrawalComplete}
+          onOpenWeightSettings={() => navigate('weights')}
         />
       )}
     </AppShell>

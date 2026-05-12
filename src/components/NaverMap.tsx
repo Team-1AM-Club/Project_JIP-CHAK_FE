@@ -10,6 +10,8 @@ const DEFAULT_CENTER = {
 };
 
 const NAVER_MAP_SCRIPT_ID = 'naver-map-sdk';
+const COORD_EPSILON = 0.00001;
+const MAP_DRIVEN_CENTER_LOCK_MS = 5000;
 
 type NaverMapStatus = 'missing-key' | 'loading' | 'ready' | 'error';
 
@@ -112,6 +114,9 @@ export function NaverMap({ address, onLocationSelect, onAddressResolved }: Naver
   const mapRef = useRef<NaverMapInstance | null>(null);
   const markerRef = useRef<NaverMarkerInstance | null>(null);
   const onAddressResolvedRef = useRef(onAddressResolved);
+  const lastNotifiedCenterRef = useRef(DEFAULT_CENTER);
+  const mapDrivenCenterLockUntilRef = useRef(0);
+  const idleTimerRef = useRef<number | null>(null);
   const [status, setStatus] = useState<NaverMapStatus>('loading');
   const clientId = (import.meta.env.VITE_NAVER_MAP_CLIENT_ID as string | undefined)?.trim();
 
@@ -151,8 +156,15 @@ export function NaverMap({ address, onLocationSelect, onAddressResolved }: Naver
           position: initialCenter,
           map,
         });
+        lastNotifiedCenterRef.current = { lat: center.lat, lng: center.lng };
 
         const handlePickedLocation = (lat: number, lng: number) => {
+          if (isSameCoordinate(lastNotifiedCenterRef.current, { lat, lng })) {
+            return;
+          }
+
+          lastNotifiedCenterRef.current = { lat, lng };
+          mapDrivenCenterLockUntilRef.current = Date.now() + MAP_DRIVEN_CENTER_LOCK_MS;
           onLocationSelect?.(lat, lng);
           resolveAddressFromCoord(lat, lng, onAddressResolvedRef.current);
         };
@@ -161,13 +173,26 @@ export function NaverMap({ address, onLocationSelect, onAddressResolved }: Naver
           const nextCenter = event.coord;
           marker.setPosition(nextCenter);
           map.setCenter(nextCenter);
-          handlePickedLocation(nextCenter.lat(), nextCenter.lng());
+          lastNotifiedCenterRef.current = {
+            lat: nextCenter.lat(),
+            lng: nextCenter.lng(),
+          };
+          mapDrivenCenterLockUntilRef.current = Date.now() + MAP_DRIVEN_CENTER_LOCK_MS;
+          onLocationSelect?.(nextCenter.lat(), nextCenter.lng());
+          resolveAddressFromCoord(nextCenter.lat(), nextCenter.lng(), onAddressResolvedRef.current);
         });
 
         window.naver.maps.Event.addListener(map, 'idle', () => {
-          const nextCenter = map.getCenter();
-          marker.setPosition(nextCenter);
-          handlePickedLocation(nextCenter.lat(), nextCenter.lng());
+          if (idleTimerRef.current) {
+            window.clearTimeout(idleTimerRef.current);
+          }
+
+          idleTimerRef.current = window.setTimeout(() => {
+            const nextCenter = map.getCenter();
+            marker.setPosition(nextCenter);
+            handlePickedLocation(nextCenter.lat(), nextCenter.lng());
+            idleTimerRef.current = null;
+          }, 180);
         });
 
         mapRef.current = map;
@@ -183,6 +208,13 @@ export function NaverMap({ address, onLocationSelect, onAddressResolved }: Naver
       .catch(() => {
         setStatus('error');
       });
+
+    return () => {
+      if (idleTimerRef.current) {
+        window.clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = null;
+      }
+    };
   }, [clientId]);
 
   useEffect(() => {
@@ -191,6 +223,16 @@ export function NaverMap({ address, onLocationSelect, onAddressResolved }: Naver
     }
 
     const nextCenter = new window.naver.maps.LatLng(center.lat, center.lng);
+    const currentCenter = mapRef.current.getCenter();
+    const current = { lat: currentCenter.lat(), lng: currentCenter.lng() };
+    const next = { lat: center.lat, lng: center.lng };
+
+    if (Date.now() < mapDrivenCenterLockUntilRef.current || isSameCoordinate(current, next)) {
+      markerRef.current.setPosition(currentCenter);
+      return;
+    }
+
+    lastNotifiedCenterRef.current = next;
     mapRef.current.setCenter(nextCenter);
     markerRef.current.setPosition(nextCenter);
     mapRef.current.refresh?.();
@@ -204,6 +246,8 @@ export function NaverMap({ address, onLocationSelect, onAddressResolved }: Naver
     navigator.geolocation.getCurrentPosition((position) => {
       const { latitude, longitude } = position.coords;
       const nextCenter = new window.naver!.maps.LatLng(latitude, longitude);
+      lastNotifiedCenterRef.current = { lat: latitude, lng: longitude };
+      mapDrivenCenterLockUntilRef.current = Date.now() + MAP_DRIVEN_CENTER_LOCK_MS;
       mapRef.current!.setCenter(nextCenter);
       markerRef.current!.setPosition(nextCenter);
       mapRef.current!.refresh?.();
@@ -239,6 +283,10 @@ export function NaverMap({ address, onLocationSelect, onAddressResolved }: Naver
       </div>
     </div>
   );
+}
+
+function isSameCoordinate(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  return Math.abs(a.lat - b.lat) < COORD_EPSILON && Math.abs(a.lng - b.lng) < COORD_EPSILON;
 }
 
 function getCenter(address: AddressCandidate | null) {
