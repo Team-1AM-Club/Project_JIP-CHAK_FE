@@ -240,6 +240,7 @@ export interface AnalysisScoreSource {
 
 export interface AnalysisReport {
   report_id: string;
+  property_id?: number;
   address: string;
   dong_code: string;
   total_score: number;

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Bookmark } from 'lucide-react';
 import { RiskRadar } from '../components/RiskChart';
 import { ScoreGauge } from '../components/ScoreGauge';
 import { Button, Card, Header, RiskBadge, ScorePill } from '../components/ui';
-import { ApiError, reportApi } from '../services/api';
+import { ApiError, bookmarkApi, reportApi } from '../services/api';
 import type {
   AnalysisCategory,
   AnalysisReport,
@@ -18,12 +19,22 @@ interface ReportPageProps {
   token: string | null;
   onBack: () => void;
   onSelectRisk?: (type: RiskType) => void;
+  onBookmarkChanged?: () => void;
 }
 
-export function ReportPage({ reportId, token, onBack, onSelectRisk }: ReportPageProps) {
+export function ReportPage({
+  reportId,
+  token,
+  onBack,
+  onSelectRisk,
+  onBookmarkChanged,
+}: ReportPageProps) {
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [bookmarkPending, setBookmarkPending] = useState(false);
+  const [bookmarkError, setBookmarkError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -35,6 +46,7 @@ export function ReportPage({ reportId, token, onBack, onSelectRisk }: ReportPage
       .then((data) => {
         if (cancelled) return;
         setReport(data);
+        setSaved(Boolean(data.saved));
       })
       .catch((e) => {
         if (cancelled) return;
@@ -49,6 +61,42 @@ export function ReportPage({ reportId, token, onBack, onSelectRisk }: ReportPage
       cancelled = true;
     };
   }, [reportId, token]);
+
+  const handleToggleBookmark = async () => {
+    if (!report || bookmarkPending || !token) return;
+
+    if (report.property_id === undefined) {
+      setBookmarkError('저장 정보를 받아오지 못했어요. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
+    const next = !saved;
+    setSaved(next);
+    setBookmarkPending(true);
+    setBookmarkError('');
+
+    try {
+      if (next) {
+        await bookmarkApi.saveProperty({ property_id: report.property_id }, token);
+      } else {
+        await bookmarkApi.deleteProperty(report.property_id, token);
+      }
+      onBookmarkChanged?.();
+    } catch (e) {
+      if (e instanceof ApiError && e.code === 'PROPERTY_ALREADY_BOOKMARKED') {
+        setSaved(true);
+        onBookmarkChanged?.();
+      } else if (e instanceof ApiError && e.code === 'PROPERTY_NOT_BOOKMARKED') {
+        setSaved(false);
+        onBookmarkChanged?.();
+      } else {
+        setSaved(!next);
+        setBookmarkError(messageForBookmarkError(e));
+      }
+    } finally {
+      setBookmarkPending(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -71,16 +119,33 @@ export function ReportPage({ reportId, token, onBack, onSelectRisk }: ReportPage
 
   const totalGrade = gradeFromLabel(report.grade);
   const risks: RiskScore[] = report.categories.map(categoryToRisk);
+  const canBookmark = Boolean(token) && report.property_id !== undefined;
 
   return (
     <div className="screen">
-      <Header title="" onBack={onBack} action={<span />} />
+      <Header
+        title=""
+        onBack={onBack}
+        action={
+          <button
+            type="button"
+            className="bookmark-toggle"
+            onClick={handleToggleBookmark}
+            disabled={bookmarkPending || !canBookmark}
+            aria-label={saved ? '저장 해제' : '저장하기'}
+            aria-pressed={saved}
+          >
+            <Bookmark size={20} fill={saved ? 'currentColor' : 'none'} />
+          </button>
+        }
+      />
       <div className="report-address">
         <span>분석 완료</span>
         {report.dong_code && <small>코드 {report.dong_code}</small>}
         <h1>{report.address}</h1>
         <p>사용자 가중치가 반영된 종합 리포트</p>
       </div>
+      {bookmarkError && <p className="inline-error">{bookmarkError}</p>}
       <Card className="summary-card">
         <ScoreGauge score={report.total_score} grade={totalGrade} />
         <div className="ai-summary">
@@ -172,5 +237,19 @@ function messageForAnalysisError(error: unknown): string {
       return error.message || '리포트를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
     default:
       return error.message || '리포트를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
+function messageForBookmarkError(error: unknown): string {
+  if (!(error instanceof ApiError)) {
+    return '저장 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
+  }
+
+  switch (error.code) {
+    case 'INVALID_TOKEN':
+    case 'EXPIRED_TOKEN':
+      return '로그인이 만료됐어요. 다시 로그인해 주세요.';
+    default:
+      return error.message || '저장 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
   }
 }

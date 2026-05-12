@@ -139,31 +139,25 @@ function App() {
     }
   };
 
-  useEffect(() => {
+  const refreshSavedReports = useCallback(() => {
     if (!accessToken) {
       setSavedReports([]);
       return;
     }
 
-    let ignore = false;
-
     bookmarkApi
       .getProperties({}, accessToken)
       .then((data) => {
-        if (!ignore) {
-          setSavedReports(data.content.map(bookmarkPropertyToSavedPreview));
-        }
+        setSavedReports(data.content.map(bookmarkPropertyToSavedPreview));
       })
       .catch(() => {
-        if (!ignore) {
-          setSavedReports([]);
-        }
+        setSavedReports([]);
       });
-
-    return () => {
-      ignore = true;
-    };
   }, [accessToken]);
+
+  useEffect(() => {
+    refreshSavedReports();
+  }, [refreshSavedReports]);
 
   useEffect(() => {
     if (screen !== 'compare') {
@@ -557,6 +551,7 @@ function App() {
           token={accessToken}
           onBack={handleReportBack}
           onSelectRisk={handleSelectRisk}
+          onBookmarkChanged={refreshSavedReports}
         />
       )}
       {screen === 'detail' && currentReportId && selectedRiskType && (
