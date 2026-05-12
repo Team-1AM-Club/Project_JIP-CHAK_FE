@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppShell } from './components/AppShell';
+import type { ResolvedMapAddress } from './components/NaverMap';
 import { ComparePage } from './pages/ComparePage';
 import { HomePage } from './pages/HomePage';
 import { LoadingPage } from './pages/LoadingPage';
@@ -48,6 +49,7 @@ function App() {
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
   const [isCreatingReport, setIsCreatingReport] = useState(false);
   const [createReportError, setCreateReportError] = useState('');
+  const [selectedDongCode, setSelectedDongCode] = useState<string | null>(null);
   const mapSearchTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -206,6 +208,7 @@ function App() {
 
   const selectAddress = (address: AddressCandidate) => {
     setSelectedAddress(address);
+    setSelectedDongCode(null);
     setCompareTargets((current) => {
       const withoutDuplicate = current.filter((item) => item.id !== address.id);
       return [address, ...withoutDuplicate].slice(0, 2);
@@ -218,6 +221,7 @@ function App() {
   const resolveMapAddress = useCallback(
     async (lat: number, lng: number) => {
       setSelectedAddress(createCoordinateAddress(lat, lng));
+      setSelectedDongCode(null);
 
       if (mapSearchTimerRef.current) {
         window.clearTimeout(mapSearchTimerRef.current);
@@ -262,6 +266,24 @@ function App() {
     void resolveMapAddress(lat, lng);
   };
 
+  const handleAddressResolved = useCallback((result: ResolvedMapAddress) => {
+    const fallbackRoad = result.roadAddress || result.jibunAddress;
+    if (!fallbackRoad) {
+      return;
+    }
+
+    setSelectedAddress({
+      id: `coord_${result.lat.toFixed(6)}_${result.lng.toFixed(6)}`,
+      roadAddress: result.roadAddress || result.jibunAddress,
+      detailAddress: result.jibunAddress || result.roadAddress,
+      dong: result.dong || '선택 위치',
+      gu: result.gu || '서울',
+      lat: result.lat,
+      lng: result.lng,
+    });
+    setSelectedDongCode(result.dongCode ?? null);
+  }, []);
+
   const confirmSelectedAddress = async () => {
     if (!selectedAddress || isCreatingReport) {
       return;
@@ -272,26 +294,33 @@ function App() {
       return;
     }
 
+    const hasResolvedRoad =
+      selectedAddress.roadAddress &&
+      selectedAddress.roadAddress !== '지도에서 선택한 위치';
+    const hasResolvedJibun =
+      selectedAddress.detailAddress && !selectedAddress.detailAddress.startsWith('위도 ');
+
+    if (!hasResolvedRoad && !hasResolvedJibun) {
+      setCreateReportError('주소를 불러오고 있어요. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
     setIsCreatingReport(true);
     setCreateReportError('');
 
-    const primaryAddress = selectedAddress.roadAddress || selectedAddress.detailAddress;
-    const payloadAddress = primaryAddress && primaryAddress !== '지도에서 선택한 위치'
-      ? primaryAddress
-      : `위도 ${selectedAddress.lat.toFixed(6)}, 경도 ${selectedAddress.lng.toFixed(6)}`;
+    const payloadAddress = (hasResolvedRoad
+      ? selectedAddress.roadAddress
+      : selectedAddress.detailAddress) as string;
 
     try {
       const env = await reportApi.create(
         {
           address: payloadAddress,
-          ...(selectedAddress.roadAddress && selectedAddress.roadAddress !== '지도에서 선택한 위치'
-            ? { road_addr: selectedAddress.roadAddress }
-            : {}),
-          ...(selectedAddress.detailAddress && !selectedAddress.detailAddress.startsWith('위도 ')
-            ? { jibun_addr: selectedAddress.detailAddress }
-            : {}),
+          ...(hasResolvedRoad ? { road_addr: selectedAddress.roadAddress } : {}),
+          ...(hasResolvedJibun ? { jibun_addr: selectedAddress.detailAddress } : {}),
           lat: selectedAddress.lat,
           lng: selectedAddress.lng,
+          ...(selectedDongCode ? { dong_code: selectedDongCode } : {}),
           source: 'MAP',
         },
         accessToken,
@@ -348,6 +377,7 @@ function App() {
     setAccessToken(null);
     setOnboardingStep(0);
     setSelectedAddress(null);
+    setSelectedDongCode(null);
     setCompareTargets([]);
     setCurrentCompare(null);
     setRecentAddresses([]);
@@ -392,6 +422,7 @@ function App() {
           onBack={() => navigate('search')}
           confirm={confirmSelectedAddress}
           onPickLocation={pickLocationOnMap}
+          onAddressResolved={handleAddressResolved}
           isSubmitting={isCreatingReport}
           errorMessage={createReportError}
         />

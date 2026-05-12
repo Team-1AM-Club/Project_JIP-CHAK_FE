@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react';
-import { NaverMap } from '../components/NaverMap';
+import { NaverMap, type ResolvedMapAddress } from '../components/NaverMap';
 import { Button, Header } from '../components/ui';
 import type { AddressCandidate } from '../types/domain';
 
@@ -8,6 +8,7 @@ export function MapSelectPage({
   onBack,
   confirm,
   onPickLocation,
+  onAddressResolved,
   isSubmitting = false,
   errorMessage = '',
 }: {
@@ -15,6 +16,7 @@ export function MapSelectPage({
   onBack: () => void;
   confirm: () => void;
   onPickLocation: (lat: number, lng: number) => void;
+  onAddressResolved?: (result: ResolvedMapAddress) => void;
   isSubmitting?: boolean;
   errorMessage?: string;
 }) {
@@ -27,7 +29,7 @@ export function MapSelectPage({
           <input value="지도에서 위치를 선택하세요" readOnly />
         </label>
       </div>
-      <NaverMap address={address} onLocationSelect={onPickLocation} />
+      <NaverMap address={address} onLocationSelect={onPickLocation} onAddressResolved={onAddressResolved} />
       <div className="map-confirm-card">
         <span>현재 선택</span>
         <h1>{address?.roadAddress ?? '선택된 위치가 없습니다'}</h1>

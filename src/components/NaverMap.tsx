@@ -13,9 +13,20 @@ const NAVER_MAP_SCRIPT_ID = 'naver-map-sdk';
 
 type NaverMapStatus = 'missing-key' | 'loading' | 'ready' | 'error';
 
+export interface ResolvedMapAddress {
+  lat: number;
+  lng: number;
+  roadAddress: string;
+  jibunAddress: string;
+  dong: string;
+  gu: string;
+  dongCode?: string;
+}
+
 interface NaverMapProps {
   address: AddressCandidate | null;
   onLocationSelect?: (lat: number, lng: number) => void;
+  onAddressResolved?: (result: ResolvedMapAddress) => void;
 }
 
 interface NaverLatLng {
@@ -35,6 +46,30 @@ interface NaverMapInstance {
 
 interface NaverMarkerInstance {
   setPosition: (latlng: NaverLatLng) => void;
+}
+
+interface NaverReverseGeocodeRegionPart {
+  name?: string;
+}
+
+interface NaverReverseGeocodeRegion {
+  area1?: NaverReverseGeocodeRegionPart;
+  area2?: NaverReverseGeocodeRegionPart;
+  area3?: NaverReverseGeocodeRegionPart;
+  area4?: NaverReverseGeocodeRegionPart;
+}
+
+interface NaverReverseGeocodeResult {
+  name?: string;
+  code?: { id?: string };
+  region?: NaverReverseGeocodeRegion;
+}
+
+interface NaverReverseGeocodeResponse {
+  v2?: {
+    address?: { roadAddress?: string; jibunAddress?: string };
+    results?: NaverReverseGeocodeResult[];
+  };
 }
 
 declare global {
@@ -60,17 +95,29 @@ declare global {
           },
         ) => NaverMapInstance;
         Marker: new (options: { position: NaverLatLng; map: NaverMapInstance }) => NaverMarkerInstance;
+        Service?: {
+          Status: { OK: number };
+          reverseGeocode: (
+            options: { coords: NaverLatLng; orders?: string },
+            callback: (status: number, response: NaverReverseGeocodeResponse) => void,
+          ) => void;
+        };
       };
     };
   }
 }
 
-export function NaverMap({ address, onLocationSelect }: NaverMapProps) {
+export function NaverMap({ address, onLocationSelect, onAddressResolved }: NaverMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<NaverMapInstance | null>(null);
   const markerRef = useRef<NaverMarkerInstance | null>(null);
+  const onAddressResolvedRef = useRef(onAddressResolved);
   const [status, setStatus] = useState<NaverMapStatus>('loading');
   const clientId = (import.meta.env.VITE_NAVER_MAP_CLIENT_ID as string | undefined)?.trim();
+
+  useEffect(() => {
+    onAddressResolvedRef.current = onAddressResolved;
+  }, [onAddressResolved]);
 
   const center = getCenter(address);
 
@@ -105,17 +152,22 @@ export function NaverMap({ address, onLocationSelect }: NaverMapProps) {
           map,
         });
 
+        const handlePickedLocation = (lat: number, lng: number) => {
+          onLocationSelect?.(lat, lng);
+          resolveAddressFromCoord(lat, lng, onAddressResolvedRef.current);
+        };
+
         window.naver.maps.Event.addListener(map, 'click', (event) => {
           const nextCenter = event.coord;
           marker.setPosition(nextCenter);
           map.setCenter(nextCenter);
-          onLocationSelect?.(nextCenter.lat(), nextCenter.lng());
+          handlePickedLocation(nextCenter.lat(), nextCenter.lng());
         });
 
         window.naver.maps.Event.addListener(map, 'idle', () => {
           const nextCenter = map.getCenter();
           marker.setPosition(nextCenter);
-          onLocationSelect?.(nextCenter.lat(), nextCenter.lng());
+          handlePickedLocation(nextCenter.lat(), nextCenter.lng());
         });
 
         mapRef.current = map;
@@ -150,11 +202,13 @@ export function NaverMap({ address, onLocationSelect }: NaverMapProps) {
     }
 
     navigator.geolocation.getCurrentPosition((position) => {
-      const nextCenter = new window.naver!.maps.LatLng(position.coords.latitude, position.coords.longitude);
+      const { latitude, longitude } = position.coords;
+      const nextCenter = new window.naver!.maps.LatLng(latitude, longitude);
       mapRef.current!.setCenter(nextCenter);
       markerRef.current!.setPosition(nextCenter);
       mapRef.current!.refresh?.();
-      onLocationSelect?.(position.coords.latitude, position.coords.longitude);
+      onLocationSelect?.(latitude, longitude);
+      resolveAddressFromCoord(latitude, longitude, onAddressResolvedRef.current);
     });
   };
 
@@ -215,9 +269,42 @@ function loadNaverMapScript(clientId: string) {
     const script = document.createElement('script');
     script.id = NAVER_MAP_SCRIPT_ID;
     script.async = true;
-    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${encodeURIComponent(clientId)}`;
+    script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${encodeURIComponent(clientId)}&submodules=geocoder`;
     script.onload = () => resolve();
     script.onerror = () => reject(new Error('Failed to load Naver Maps SDK'));
     document.head.appendChild(script);
   });
+}
+
+function resolveAddressFromCoord(
+  lat: number,
+  lng: number,
+  onResolved: ((result: ResolvedMapAddress) => void) | undefined,
+) {
+  if (!onResolved) return;
+  const naver = window.naver?.maps;
+  if (!naver?.Service?.reverseGeocode) return;
+
+  const coords = new naver.LatLng(lat, lng);
+
+  naver.Service.reverseGeocode(
+    { coords, orders: 'legalcode,admcode,addr,roadaddr' },
+    (status, response) => {
+      if (status !== naver.Service!.Status.OK) return;
+      const v2 = response.v2;
+      const legal = v2?.results?.find((item) => item.name === 'legalcode');
+      const fallback = v2?.results?.[0];
+      const region = legal?.region ?? fallback?.region;
+
+      onResolved({
+        lat,
+        lng,
+        roadAddress: v2?.address?.roadAddress ?? '',
+        jibunAddress: v2?.address?.jibunAddress ?? '',
+        dong: region?.area3?.name ?? '',
+        gu: region?.area2?.name ?? '',
+        dongCode: legal?.code?.id,
+      });
+    },
+  );
 }
