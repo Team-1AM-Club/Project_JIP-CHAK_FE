@@ -21,6 +21,7 @@ import {
 } from './services/oauth';
 import type {
   AddressCandidate,
+  AccountWithdrawalResult,
   CompareResult,
   RecentAddressSummary,
   SavedReportPreview,
@@ -364,6 +365,35 @@ function App() {
     navigate('map');
   };
 
+  const resetSessionState = () => {
+    setAccessToken(null);
+    setOnboardingStep(0);
+    setSelectedAddress(null);
+    setCompareTargets([]);
+    setCurrentCompare(null);
+    setRecentAddresses([]);
+    setSavedReports([]);
+    setPendingTaskId(null);
+    setPendingTaskEta(null);
+    setPendingDongName(null);
+    setPendingAnalysisAddress(null);
+    setCurrentReportId(null);
+    setCreateReportError('');
+  };
+
+  const clearClientSession = () => {
+    authStorage.clear();
+    oauthSession.clear();
+    window.localStorage.removeItem('jipchak.profileType');
+    document.cookie.split(';').forEach((cookie) => {
+      const cookieName = cookie.split('=')[0]?.trim();
+
+      if (cookieName) {
+        document.cookie = `${cookieName}=; Max-Age=0; path=/`;
+      }
+    });
+  };
+
   const handleLogout = async () => {
     if (accessToken) {
       try {
@@ -389,6 +419,27 @@ function App() {
     setCurrentReportId(null);
     setCreateReportError('');
     navigate('login');
+  };
+
+  const handleWithdraw = async (): Promise<AccountWithdrawalResult> => {
+    if (!accessToken) {
+      clearClientSession();
+      resetSessionState();
+      return {
+        userName: '사용자',
+        deletedAt: new Date().toISOString(),
+      };
+    }
+
+    const result = await userApi.deleteMe(accessToken);
+    clearClientSession();
+    resetSessionState();
+
+    return result;
+  };
+
+  const handleWithdrawalComplete = () => {
+    window.location.assign('/');
   };
 
   const bottomNav = screen === 'saved' || screen === 'home' || screen === 'my';
@@ -447,7 +498,14 @@ function App() {
           navigate={navigate}
         />
       )}
-      {screen === 'my' && <MyPage token={accessToken} onLogout={handleLogout} />}
+      {screen === 'my' && (
+        <MyPage
+          token={accessToken}
+          onLogout={handleLogout}
+          onWithdraw={handleWithdraw}
+          onWithdrawalComplete={handleWithdrawalComplete}
+        />
+      )}
     </AppShell>
   );
 }
