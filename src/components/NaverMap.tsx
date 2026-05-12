@@ -29,6 +29,7 @@ interface NaverMapEvent {
 
 interface NaverMapInstance {
   setCenter: (latlng: NaverLatLng) => void;
+  getCenter: () => NaverLatLng;
   refresh?: () => void;
 }
 
@@ -108,6 +109,12 @@ export function NaverMap({ address, onLocationSelect }: NaverMapProps) {
           const nextCenter = event.coord;
           marker.setPosition(nextCenter);
           map.setCenter(nextCenter);
+          onLocationSelect?.(nextCenter.lat(), nextCenter.lng());
+        });
+
+        window.naver.maps.Event.addListener(map, 'center_changed', () => {
+          const nextCenter = map.getCenter();
+          marker.setPosition(nextCenter);
           onLocationSelect?.(nextCenter.lat(), nextCenter.lng());
         });
 
