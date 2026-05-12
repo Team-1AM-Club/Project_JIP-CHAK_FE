@@ -64,6 +64,7 @@ export interface LoginRequest {
   provider: SocialProviderWire;
   code: string;
   redirect_uri: string;
+  state?: string;
 }
 
 export interface AuthSubscription {
