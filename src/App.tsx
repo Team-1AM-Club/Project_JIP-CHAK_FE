@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage';
 import { MapSelectPage } from './pages/MapSelectPage';
 import { MyPage } from './pages/MyPage';
 import { Onboarding } from './pages/Onboarding';
+import { ReportPage } from './pages/ReportPage';
 import { SavedPage } from './pages/SavedPage';
 import { SearchPage } from './pages/SearchPage';
 import { ApiError, addressApi, authApi, bookmarkApi, reportApi, userApi } from './services/api';
@@ -352,7 +353,11 @@ function App() {
     setCurrentReportId(reportId);
     setPendingTaskId(null);
     setPendingTaskEta(null);
-    // 리포트 화면은 다음 단계에서 연결. 지금은 홈으로 이동.
+    navigate('report');
+  };
+
+  const handleReportBack = () => {
+    setCurrentReportId(null);
     navigate('home');
   };
 
@@ -488,6 +493,13 @@ function App() {
           address={pendingAnalysisAddress}
           onCompleted={handleAnalysisCompleted}
           onCancel={handleAnalysisCancelled}
+        />
+      )}
+      {screen === 'report' && currentReportId && (
+        <ReportPage
+          reportId={currentReportId}
+          token={accessToken}
+          onBack={handleReportBack}
         />
       )}
       {screen === 'compare' && (
