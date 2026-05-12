@@ -123,6 +123,7 @@ export type Screen =
   | 'home'
   | 'search'
   | 'map'
+  | 'loading'
   | 'compare'
   | 'my';
 

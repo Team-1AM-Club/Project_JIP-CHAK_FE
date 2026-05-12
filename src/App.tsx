@@ -2,13 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppShell } from './components/AppShell';
 import { ComparePage } from './pages/ComparePage';
 import { HomePage } from './pages/HomePage';
+import { LoadingPage } from './pages/LoadingPage';
 import { LoginPage } from './pages/LoginPage';
 import { MapSelectPage } from './pages/MapSelectPage';
 import { MyPage } from './pages/MyPage';
 import { Onboarding } from './pages/Onboarding';
 import { SavedPage } from './pages/SavedPage';
 import { SearchPage } from './pages/SearchPage';
-import { addressApi, authApi, bookmarkApi, userApi } from './services/api';
+import { ApiError, addressApi, authApi, bookmarkApi, reportApi, userApi } from './services/api';
 import { authStorage } from './services/authStorage';
 import {
   buildAuthorizeUrl,
@@ -40,6 +41,13 @@ function App() {
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
+  const [pendingTaskEta, setPendingTaskEta] = useState<number | null>(null);
+  const [pendingDongName, setPendingDongName] = useState<string | null>(null);
+  const [pendingAnalysisAddress, setPendingAnalysisAddress] = useState<string | null>(null);
+  const [currentReportId, setCurrentReportId] = useState<string | null>(null);
+  const [isCreatingReport, setIsCreatingReport] = useState(false);
+  const [createReportError, setCreateReportError] = useState('');
   const mapSearchTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -254,6 +262,74 @@ function App() {
     void resolveMapAddress(lat, lng);
   };
 
+  const confirmSelectedAddress = async () => {
+    if (!selectedAddress || isCreatingReport) {
+      return;
+    }
+
+    setIsCreatingReport(true);
+    setCreateReportError('');
+
+    const primaryAddress = selectedAddress.roadAddress || selectedAddress.detailAddress;
+    const payloadAddress = primaryAddress && primaryAddress !== '지도에서 선택한 위치'
+      ? primaryAddress
+      : `위도 ${selectedAddress.lat.toFixed(6)}, 경도 ${selectedAddress.lng.toFixed(6)}`;
+
+    try {
+      const env = await reportApi.create(
+        {
+          address: payloadAddress,
+          ...(selectedAddress.roadAddress && selectedAddress.roadAddress !== '지도에서 선택한 위치'
+            ? { road_addr: selectedAddress.roadAddress }
+            : {}),
+          ...(selectedAddress.detailAddress && !selectedAddress.detailAddress.startsWith('위도 ')
+            ? { jibun_addr: selectedAddress.detailAddress }
+            : {}),
+          lat: selectedAddress.lat,
+          lng: selectedAddress.lng,
+          source: 'MAP',
+        },
+        accessToken,
+      );
+
+      setPendingAnalysisAddress(env.data.address ?? payloadAddress);
+      setPendingDongName(env.data.dong_name ?? null);
+
+      if (env.status === 'READY') {
+        setPendingTaskId(null);
+        setPendingTaskEta(null);
+        setCurrentReportId(env.data.report_id);
+      } else {
+        setPendingTaskId(env.data.task_id);
+        setPendingTaskEta(env.data.estimated_seconds ?? null);
+        setCurrentReportId(null);
+      }
+
+      navigate('loading');
+    } catch (e) {
+      setCreateReportError(messageForCreateError(e));
+    } finally {
+      setIsCreatingReport(false);
+    }
+  };
+
+  const handleAnalysisCompleted = (reportId: string) => {
+    setCurrentReportId(reportId);
+    setPendingTaskId(null);
+    setPendingTaskEta(null);
+    // 리포트 화면은 다음 단계에서 연결. 지금은 홈으로 이동.
+    navigate('home');
+  };
+
+  const handleAnalysisCancelled = () => {
+    setPendingTaskId(null);
+    setPendingTaskEta(null);
+    setCurrentReportId(null);
+    setPendingAnalysisAddress(null);
+    setPendingDongName(null);
+    navigate('map');
+  };
+
   const handleLogout = async () => {
     if (accessToken) {
       try {
@@ -271,6 +347,12 @@ function App() {
     setCurrentCompare(null);
     setRecentAddresses([]);
     setSavedReports([]);
+    setPendingTaskId(null);
+    setPendingTaskEta(null);
+    setPendingDongName(null);
+    setPendingAnalysisAddress(null);
+    setCurrentReportId(null);
+    setCreateReportError('');
     navigate('login');
   };
 
@@ -303,8 +385,22 @@ function App() {
         <MapSelectPage
           address={selectedAddress}
           onBack={() => navigate('search')}
-          confirm={() => navigate('home')}
+          confirm={confirmSelectedAddress}
           onPickLocation={pickLocationOnMap}
+          isSubmitting={isCreatingReport}
+          errorMessage={createReportError}
+        />
+      )}
+      {screen === 'loading' && (
+        <LoadingPage
+          taskId={pendingTaskId}
+          reportId={currentReportId}
+          token={accessToken}
+          estimatedSeconds={pendingTaskEta}
+          dongName={pendingDongName}
+          address={pendingAnalysisAddress}
+          onCompleted={handleAnalysisCompleted}
+          onCancel={handleAnalysisCancelled}
         />
       )}
       {screen === 'compare' && (
@@ -330,6 +426,29 @@ function createCoordinateAddress(lat: number, lng: number): AddressCandidate {
     lat,
     lng,
   };
+}
+
+function messageForCreateError(error: unknown): string {
+  if (!(error instanceof ApiError)) {
+    return '분석 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+  }
+
+  switch (error.code) {
+    case 'INVALID_INPUT_VALUE':
+      return '주소 정보가 올바르지 않습니다. 다시 선택해 주세요.';
+    case 'INVALID_LOCATION':
+      return '분석할 수 없는 위치입니다. 다른 위치를 선택해 주세요.';
+    case 'OUT_OF_SERVICE_AREA':
+      return '서울시 내 주소만 분석할 수 있어요.';
+    case 'INVALID_TOKEN':
+      return '로그인이 만료됐어요. 다시 로그인해 주세요.';
+    case 'EXTERNAL_API_ERROR':
+      return '외부 데이터 조회에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+    case 'ANALYSIS_FAILED':
+      return '분석 처리 중 오류가 발생했습니다. 다시 시도해 주세요.';
+    default:
+      return '분석 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+  }
 }
 
 export default App;
