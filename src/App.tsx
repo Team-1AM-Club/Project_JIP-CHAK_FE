@@ -8,7 +8,7 @@ import { MyPage } from './pages/MyPage';
 import { Onboarding } from './pages/Onboarding';
 import { SavedPage } from './pages/SavedPage';
 import { SearchPage } from './pages/SearchPage';
-import { addressApi, authApi, userApi } from './services/api';
+import { addressApi, authApi, bookmarkApi, userApi } from './services/api';
 import { authStorage } from './services/authStorage';
 import {
   buildAuthorizeUrl,
@@ -106,6 +106,32 @@ function App() {
   };
 
   useEffect(() => {
+    if (!accessToken) {
+      setSavedReports([]);
+      return;
+    }
+
+    let ignore = false;
+
+    bookmarkApi
+      .getProperties(accessToken)
+      .then((reports) => {
+        if (!ignore) {
+          setSavedReports(reports);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setSavedReports([]);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [accessToken]);
+
+  useEffect(() => {
     if (screen !== 'compare') {
       return;
     }
@@ -119,7 +145,7 @@ function App() {
 
     setCompareLoading(true);
     addressApi
-      .compare(compareTargets[0].id, compareTargets[1].id)
+      .compare(compareTargets[0].id, compareTargets[1].id, accessToken)
       .then(setCurrentCompare)
       .catch(() => {
         setCurrentCompare(null);
@@ -128,7 +154,7 @@ function App() {
       .finally(() => {
         setCompareLoading(false);
       });
-  }, [screen, compareTargets]);
+  }, [screen, compareTargets, accessToken]);
 
   const navigate = (next: Screen) => {
     setScreen(next);
@@ -149,7 +175,7 @@ function App() {
 
     if (accessToken) {
       try {
-        await userApi.updateWeights(accessToken, profileType);
+        await userApi.updateProfileType(accessToken, profileType);
       } catch {
         // 가중치 저장 실패가 홈 진입을 막지는 않습니다.
       }
@@ -167,7 +193,24 @@ function App() {
     navigate('map');
   };
 
-  const searchAddresses = useCallback((query: string) => addressApi.search(query), []);
+  const searchAddresses = useCallback((query: string) => addressApi.search(query, accessToken), [accessToken]);
+
+  const resolveMapAddress = useCallback(
+    async (lat: number, lng: number) => {
+      setSelectedAddress(createCoordinateAddress(lat, lng));
+
+      try {
+        const [candidate] = await addressApi.mapSearch(lat, lng, accessToken);
+
+        if (candidate) {
+          setSelectedAddress(candidate);
+        }
+      } catch {
+        // 좌표 fallback을 이미 표시했으므로 지도 검색 실패는 화면 전환을 막지 않습니다.
+      }
+    },
+    [accessToken],
+  );
 
   const openMapFromSearch = async () => {
     if (!navigator.geolocation) {
@@ -177,7 +220,7 @@ function App() {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setSelectedAddress(createCoordinateAddress(position.coords.latitude, position.coords.longitude));
+        void resolveMapAddress(position.coords.latitude, position.coords.longitude);
         navigate('map');
       },
       () => {
@@ -188,13 +231,13 @@ function App() {
   };
 
   const pickLocationOnMap = (lat: number, lng: number) => {
-    setSelectedAddress(createCoordinateAddress(lat, lng));
+    void resolveMapAddress(lat, lng);
   };
 
   const handleLogout = async () => {
     if (accessToken) {
       try {
-        await authApi.logout(accessToken);
+        await authApi.logout(accessToken, authStorage.getRefreshToken());
       } catch {
         // 서버 로그아웃 실패 시에도 로컬 세션은 정리합니다.
       }
@@ -224,7 +267,7 @@ function App() {
           next={completeOnboarding}
         />
       )}
-      {screen === 'saved' && <SavedPage />}
+      {screen === 'saved' && <SavedPage savedReports={savedReports} />}
       {screen === 'home' && (
         <HomePage navigate={navigate} recentAddresses={recentAddresses} savedReports={savedReports} />
       )}

@@ -2,8 +2,10 @@ const ACCESS_TOKEN_KEY = 'jipchak.accessToken';
 const REFRESH_TOKEN_KEY = 'jipchak.refreshToken';
 
 interface TokenPair {
-  access_token: string;
-  refresh_token: string;
+  access_token?: string;
+  refresh_token?: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export const authStorage = {
@@ -16,8 +18,16 @@ export const authStorage = {
   },
 
   saveTokens(tokens: TokenPair) {
-    window.localStorage.setItem(ACCESS_TOKEN_KEY, tokens.access_token);
-    window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token);
+    const accessToken = tokens.access_token ?? tokens.accessToken;
+    const refreshToken = tokens.refresh_token ?? tokens.refreshToken;
+
+    if (accessToken) {
+      window.localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+    }
+
+    if (refreshToken) {
+      window.localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    }
   },
 
   clear() {

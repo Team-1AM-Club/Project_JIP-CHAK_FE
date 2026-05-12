@@ -107,6 +107,14 @@ export interface UserSettings {
   darkMode: 'SYSTEM' | 'LIGHT' | 'DARK';
 }
 
+export interface RiskWeights {
+  security: number;
+  noise: number;
+  medical: number;
+  flood: number;
+  congestion: number;
+}
+
 export type Screen =
   | 'login'
   | 'onboarding'

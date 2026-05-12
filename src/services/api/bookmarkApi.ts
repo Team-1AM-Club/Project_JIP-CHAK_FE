@@ -10,6 +10,24 @@ export const bookmarkApi = {
 
     return normalizeSavedReports(response);
   },
+
+  saveProperty(token: string, propertyId: string, reportId?: string | null) {
+    return apiRequest<unknown>(apiEndpoints.bookmarks.properties, {
+      method: 'POST',
+      token,
+      body: JSON.stringify({
+        property_id: propertyId,
+        ...(reportId ? { report_id: reportId } : {}),
+      }),
+    });
+  },
+
+  deleteProperty(token: string, id: string) {
+    return apiRequest<void>(`${apiEndpoints.bookmarks.properties}/${id}`, {
+      method: 'DELETE',
+      token,
+    });
+  },
 };
 
 function normalizeSavedReports(response: unknown): SavedReportPreview[] {
@@ -30,12 +48,12 @@ function normalizeSavedReports(response: unknown): SavedReportPreview[] {
 
     return {
       id: stringValue(record.id ?? record.bookmarkId ?? record.propertyId ?? `bookmark_${index}`),
-      reportId: optionalString(record.reportId ?? report?.id),
-      address: stringValue(record.roadAddress ?? record.addressName ?? record.name ?? address?.roadAddress ?? address?.address),
-      detail: stringValue(record.detailAddress ?? record.description ?? address?.detailAddress ?? address?.dong),
-      score: optionalNumber(record.totalScore ?? record.score ?? report?.totalScore),
-      grade: normalizeGrade(record.totalGrade ?? record.grade ?? report?.totalGrade),
-      savedAtLabel: optionalString(record.savedAtLabel ?? record.createdAt ?? record.savedAt),
+      reportId: optionalString(record.reportId ?? record.report_id ?? report?.id),
+      address: stringValue(record.roadAddress ?? record.road_addr ?? record.addressName ?? record.name ?? address?.roadAddress ?? address?.road_addr ?? address?.address),
+      detail: stringValue(record.detailAddress ?? record.detail_address ?? record.jibun_addr ?? record.description ?? address?.detailAddress ?? address?.jibun_addr ?? address?.dong),
+      score: optionalNumber(record.totalScore ?? record.total_score ?? record.score ?? report?.totalScore ?? report?.total_score),
+      grade: normalizeGrade(record.totalGrade ?? record.total_grade ?? record.grade ?? report?.totalGrade ?? report?.total_grade),
+      savedAtLabel: optionalString(record.savedAtLabel ?? record.createdAt ?? record.created_at ?? record.savedAt ?? record.saved_at),
       isBookmarked: true,
     };
   });

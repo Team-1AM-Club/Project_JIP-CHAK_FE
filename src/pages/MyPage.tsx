@@ -59,7 +59,7 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
     }
 
     try {
-      const nextProfile = await userApi.updateWeights(token, nextType);
+      const nextProfile = await userApi.updateProfileType(token, nextType);
       setProfile(nextProfile);
       setStatusMessage('가중치가 재설정되었습니다.');
     } catch {

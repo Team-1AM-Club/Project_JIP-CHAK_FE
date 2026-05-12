@@ -13,6 +13,8 @@ vite.config.d.ts
 # Local dev server logs
 dev-server.log
 dev-server.err
+dev-server-*.log
+dev-server-*.err
 
 # Environment variables
 .env
