@@ -36,6 +36,7 @@ coverage/
 # Tool caches
 .vite/
 .cache/
+.tmp_*
 
 # OS files
 .DS_Store

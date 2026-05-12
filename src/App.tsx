@@ -9,6 +9,7 @@ import { MapSelectPage } from './pages/MapSelectPage';
 import { MyPage } from './pages/MyPage';
 import { Onboarding } from './pages/Onboarding';
 import { ReportPage } from './pages/ReportPage';
+import { RiskDetailPage } from './pages/RiskDetailPage';
 import { SavedPage } from './pages/SavedPage';
 import { SearchPage } from './pages/SearchPage';
 import { ApiError, addressApi, authApi, bookmarkApi, reportApi, userApi } from './services/api';
@@ -28,6 +29,7 @@ import type {
   Grade,
   GradeLabel,
   RecentAddressSummary,
+  RiskType,
   SavedReportPreview,
   ScoreStatus,
   Screen,
@@ -53,6 +55,7 @@ function App() {
   const [pendingDongName, setPendingDongName] = useState<string | null>(null);
   const [pendingAnalysisAddress, setPendingAnalysisAddress] = useState<string | null>(null);
   const [currentReportId, setCurrentReportId] = useState<string | null>(null);
+  const [selectedRiskType, setSelectedRiskType] = useState<RiskType | null>(null);
   const [isCreatingReport, setIsCreatingReport] = useState(false);
   const [createReportError, setCreateReportError] = useState('');
   const [selectedDongCode, setSelectedDongCode] = useState<string | null>(null);
@@ -364,7 +367,18 @@ function App() {
 
   const handleReportBack = () => {
     setCurrentReportId(null);
+    setSelectedRiskType(null);
     navigate('home');
+  };
+
+  const handleSelectRisk = (type: RiskType) => {
+    setSelectedRiskType(type);
+    navigate('detail');
+  };
+
+  const handleDetailBack = () => {
+    setSelectedRiskType(null);
+    navigate('report');
   };
 
   const handleToggleSavedBookmark = async (id: string) => {
@@ -413,6 +427,7 @@ function App() {
     setPendingDongName(null);
     setPendingAnalysisAddress(null);
     setCurrentReportId(null);
+    setSelectedRiskType(null);
     setCreateReportError('');
   };
 
@@ -452,6 +467,7 @@ function App() {
     setPendingDongName(null);
     setPendingAnalysisAddress(null);
     setCurrentReportId(null);
+    setSelectedRiskType(null);
     setCreateReportError('');
     setBookmarkPendingId(null);
     setSavedListError('');
@@ -539,6 +555,15 @@ function App() {
           reportId={currentReportId}
           token={accessToken}
           onBack={handleReportBack}
+          onSelectRisk={handleSelectRisk}
+        />
+      )}
+      {screen === 'detail' && currentReportId && selectedRiskType && (
+        <RiskDetailPage
+          reportId={currentReportId}
+          riskType={selectedRiskType}
+          token={accessToken}
+          onBack={handleDetailBack}
         />
       )}
       {screen === 'compare' && (

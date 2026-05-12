@@ -130,6 +130,7 @@ export type Screen =
   | 'map'
   | 'loading'
   | 'report'
+  | 'detail'
   | 'compare'
   | 'my';
 

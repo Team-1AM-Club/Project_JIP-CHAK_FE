@@ -17,9 +17,10 @@ interface ReportPageProps {
   reportId: string;
   token: string | null;
   onBack: () => void;
+  onSelectRisk?: (type: RiskType) => void;
 }
 
-export function ReportPage({ reportId, token, onBack }: ReportPageProps) {
+export function ReportPage({ reportId, token, onBack, onSelectRisk }: ReportPageProps) {
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -91,7 +92,11 @@ export function ReportPage({ reportId, token, onBack }: ReportPageProps) {
         <RiskRadar risks={risks} centerScore={report.total_score} />
         <div className="risk-list">
           {risks.map((risk) => (
-            <button key={risk.type} type="button">
+            <button
+              key={risk.type}
+              type="button"
+              onClick={onSelectRisk ? () => onSelectRisk(risk.type) : undefined}
+            >
               <span>{risk.label}</span>
               <RiskBadge grade={risk.grade} />
               <ScorePill score={risk.score} grade={risk.grade} />
