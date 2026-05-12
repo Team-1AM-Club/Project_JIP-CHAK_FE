@@ -531,7 +531,12 @@ function App() {
         />
       )}
       {screen === 'home' && (
-        <HomePage navigate={navigate} recentAddresses={recentAddresses} savedReports={savedReports} />
+        <HomePage
+          navigate={navigate}
+          recentAddresses={recentAddresses}
+          savedReports={savedReports}
+          onOpenReport={handleOpenSavedReport}
+        />
       )}
       {screen === 'search' && (
         <SearchPage

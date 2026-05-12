@@ -7,9 +7,15 @@ interface HomePageProps {
   navigate: (screen: Screen) => void;
   recentAddresses?: RecentAddressSummary[];
   savedReports?: SavedReportPreview[];
+  onOpenReport?: (reportId: string) => void;
 }
 
-export function HomePage({ navigate, recentAddresses = [], savedReports = [] }: HomePageProps) {
+export function HomePage({
+  navigate,
+  recentAddresses = [],
+  savedReports = [],
+  onOpenReport,
+}: HomePageProps) {
   const hasHomeData = recentAddresses.length > 0 || savedReports.length > 0;
 
   return (
@@ -68,19 +74,26 @@ export function HomePage({ navigate, recentAddresses = [], savedReports = [] }: 
       {savedReports.length > 0 && (
         <HomeSection title="저장한 리포트" actionLabel={`${savedReports.length}개`} onAction={() => navigate('saved')}>
           <div className="saved-preview">
-            {savedReports.slice(0, 2).map((item) => (
-              <Card key={item.id} className="saved-report-card">
-                <div className="saved-report-top">
-                  <HomeScore score={item.score} grade={item.grade} fallback={<Bookmark size={17} />} />
-                  {item.isBookmarked !== false && <Bookmark className="saved-report-mark" size={16} fill="currentColor" />}
-                </div>
-                <strong>{item.address}</strong>
-                <small>
-                  {item.detail}
-                  {item.savedAtLabel ? ` · ${item.savedAtLabel}` : ''}
-                </small>
-              </Card>
-            ))}
+            {savedReports.slice(0, 2).map((item) => {
+              const canOpen = Boolean(onOpenReport && item.reportId);
+              return (
+                <Card
+                  key={item.id}
+                  className="saved-report-card"
+                  onClick={canOpen ? () => onOpenReport?.(item.reportId!) : undefined}
+                >
+                  <div className="saved-report-top">
+                    <HomeScore score={item.score} grade={item.grade} fallback={<Bookmark size={17} />} />
+                    {item.isBookmarked !== false && <Bookmark className="saved-report-mark" size={16} fill="currentColor" />}
+                  </div>
+                  <strong>{item.address}</strong>
+                  <small>
+                    {item.detail}
+                    {item.savedAtLabel ? ` · ${item.savedAtLabel}` : ''}
+                  </small>
+                </Card>
+              );
+            })}
           </div>
         </HomeSection>
       )}

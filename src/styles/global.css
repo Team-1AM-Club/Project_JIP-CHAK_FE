@@ -1567,7 +1567,7 @@ button {
   /* spacer */
 }
 
-.compare-table-head-label,
+.compare-table-head-labels,
 .compare-metric-scores {
   display: grid;
   grid-auto-flow: column;

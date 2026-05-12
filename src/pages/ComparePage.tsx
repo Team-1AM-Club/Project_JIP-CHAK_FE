@@ -84,11 +84,13 @@ export function ComparePage({
               <Card className="compare-table">
                 <div className="compare-table-head">
                   <span />
-                  {compare.reports.map((report) => (
-                    <span key={report.report_id} className="compare-table-head-label">
-                      {report.rank_label}
-                    </span>
-                  ))}
+                  <div className="compare-table-head-labels">
+                    {compare.reports.map((report) => (
+                      <span key={report.report_id} className="compare-table-head-label">
+                        {report.rank_label}
+                      </span>
+                    ))}
+                  </div>
                 </div>
                 {compare.metric_comparison.map((metric) => (
                   <MetricRow
