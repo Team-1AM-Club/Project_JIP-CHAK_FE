@@ -20,6 +20,7 @@ import {
 } from './services/oauth';
 import type {
   AddressCandidate,
+  AccountWithdrawalResult,
   CompareResult,
   RecentAddressSummary,
   SavedReportPreview,
@@ -335,6 +336,35 @@ function App() {
     navigate('map');
   };
 
+  const resetSessionState = () => {
+    setAccessToken(null);
+    setOnboardingStep(0);
+    setSelectedAddress(null);
+    setCompareTargets([]);
+    setCurrentCompare(null);
+    setRecentAddresses([]);
+    setSavedReports([]);
+    setPendingTaskId(null);
+    setPendingTaskEta(null);
+    setPendingDongName(null);
+    setPendingAnalysisAddress(null);
+    setCurrentReportId(null);
+    setCreateReportError('');
+  };
+
+  const clearClientSession = () => {
+    authStorage.clear();
+    oauthSession.clear();
+    window.localStorage.removeItem('jipchak.profileType');
+    document.cookie.split(';').forEach((cookie) => {
+      const cookieName = cookie.split('=')[0]?.trim();
+
+      if (cookieName) {
+        document.cookie = `${cookieName}=; Max-Age=0; path=/`;
+      }
+    });
+  };
+
   const handleLogout = async () => {
     if (accessToken) {
       try {
@@ -361,29 +391,25 @@ function App() {
     navigate('login');
   };
 
-  const handleWithdraw = async () => {
+  const handleWithdraw = async (): Promise<AccountWithdrawalResult> => {
     if (!accessToken) {
-      await handleLogout();
-      return;
+      clearClientSession();
+      resetSessionState();
+      return {
+        userName: '사용자',
+        deletedAt: new Date().toISOString(),
+      };
     }
 
-    await userApi.deleteMe(accessToken);
-    authStorage.clear();
-    window.localStorage.removeItem('jipchak.profileType');
-    setAccessToken(null);
-    setOnboardingStep(0);
-    setSelectedAddress(null);
-    setCompareTargets([]);
-    setCurrentCompare(null);
-    setRecentAddresses([]);
-    setSavedReports([]);
-    setPendingTaskId(null);
-    setPendingTaskEta(null);
-    setPendingDongName(null);
-    setPendingAnalysisAddress(null);
-    setCurrentReportId(null);
-    setCreateReportError('');
-    navigate('login');
+    const result = await userApi.deleteMe(accessToken);
+    clearClientSession();
+    resetSessionState();
+
+    return result;
+  };
+
+  const handleWithdrawalComplete = () => {
+    window.location.assign('/');
   };
 
   const bottomNav = screen === 'saved' || screen === 'home' || screen === 'my';
@@ -441,7 +467,14 @@ function App() {
           navigate={navigate}
         />
       )}
-      {screen === 'my' && <MyPage token={accessToken} onLogout={handleLogout} onWithdraw={handleWithdraw} />}
+      {screen === 'my' && (
+        <MyPage
+          token={accessToken}
+          onLogout={handleLogout}
+          onWithdraw={handleWithdraw}
+          onWithdrawalComplete={handleWithdrawalComplete}
+        />
+      )}
     </AppShell>
   );
 }

@@ -2,7 +2,13 @@ import { Bell, ChevronRight, LogOut, Moon, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, Header } from '../components/ui';
 import { userApi } from '../services/api';
-import type { RiskWeights, UserProfile, UserProfileType, UserSettings } from '../types/domain';
+import type {
+  AccountWithdrawalResult,
+  RiskWeights,
+  UserProfile,
+  UserProfileType,
+  UserSettings,
+} from '../types/domain';
 
 const profileLabel: Record<UserProfileType, string> = {
   SINGLE: '청년 1인 가구',
@@ -47,10 +53,12 @@ export function MyPage({
   token,
   onLogout,
   onWithdraw,
+  onWithdrawalComplete,
 }: {
   token: string | null;
   onLogout: () => Promise<void>;
-  onWithdraw: () => Promise<void>;
+  onWithdraw: () => Promise<AccountWithdrawalResult>;
+  onWithdrawalComplete: () => void;
 }) {
   const [profile, setProfile] = useState<UserProfile>({
     id: 'local',
@@ -65,6 +73,7 @@ export function MyPage({
   const [isUpdatingWeights, setIsUpdatingWeights] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [withdrawalMessage, setWithdrawalMessage] = useState('');
   const nickname = profile.nickname || '사용자';
   const currentProfileType = profileLabel[profile.profileType] ? profile.profileType : 'SINGLE';
 
@@ -190,7 +199,15 @@ export function MyPage({
     setStatusMessage('');
 
     try {
-      await onWithdraw();
+      const result = await onWithdraw();
+      const displayName = result.userName || nickname;
+      const formattedDate = formatWithdrawalDate(result.deletedAt);
+
+      setWithdrawalMessage(
+        `${displayName}님의 요청에 따라 ${formattedDate} 기준으로 계정이 삭제되었습니다. 소중한 정보는 안전하게 파기되었습니다.`,
+      );
+      setIsWithdrawing(false);
+      setIsWithdrawOpen(false);
     } catch {
       setStatusMessage('회원탈퇴 요청에 실패했습니다. 잠시 후 다시 시도해주세요.');
       setIsWithdrawing(false);
@@ -255,8 +272,46 @@ export function MyPage({
           </div>
         </div>
       )}
+
+      {withdrawalMessage && (
+        <div className="withdraw-modal-backdrop" role="presentation">
+          <div className="withdraw-modal" role="dialog" aria-modal="true" aria-labelledby="withdraw-complete-title">
+            <span className="withdraw-icon">
+              <Trash2 size={24} />
+            </span>
+            <h2 id="withdraw-complete-title">탈퇴가 완료되었습니다</h2>
+            <p>{withdrawalMessage}</p>
+            <button className="withdraw-confirm" onClick={onWithdrawalComplete}>
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function formatWithdrawalDate(value: string) {
+  const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+
+  if (isoMatch) {
+    const [, year, month, day, hour, minute] = isoMatch;
+    return `${year}년 ${Number(month)}월 ${Number(day)}일 ${hour}시 ${minute}분`;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}년 ${month}월 ${day}일 ${hour}시 ${minute}분`;
 }
 
 function getStoredProfileType(): UserProfileType | null {

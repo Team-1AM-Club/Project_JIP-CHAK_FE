@@ -116,6 +116,11 @@ export interface RiskWeights {
   congestion: number;
 }
 
+export interface AccountWithdrawalResult {
+  userName: string;
+  deletedAt: string;
+}
+
 export type Screen =
   | 'login'
   | 'onboarding'

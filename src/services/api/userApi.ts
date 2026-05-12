@@ -1,4 +1,10 @@
-import type { RiskWeights, UserProfile, UserProfileType, UserSettings } from '../../types/domain';
+import type {
+  AccountWithdrawalResult,
+  RiskWeights,
+  UserProfile,
+  UserProfileType,
+  UserSettings,
+} from '../../types/domain';
 import { apiRequest } from './apiClient';
 import { apiEndpoints } from './endpoints';
 
@@ -56,11 +62,13 @@ export const userApi = {
     return normalizeSettings(response);
   },
 
-  deleteMe(token: string) {
-    return apiRequest<void>(apiEndpoints.users.me, {
+  async deleteMe(token: string) {
+    const response = await apiRequest<unknown>(apiEndpoints.users.me, {
       method: 'DELETE',
       token,
     });
+
+    return normalizeWithdrawalResult(response);
   },
 };
 
@@ -84,6 +92,38 @@ function normalizeSettings(response: unknown): UserSettings {
   return {
     notificationsEnabled: booleanValue(record.notificationsEnabled ?? record.noti_enabled, true),
     darkMode: darkMode(record.darkMode ?? record.dark_mode),
+  };
+}
+
+function normalizeWithdrawalResult(response: unknown): AccountWithdrawalResult {
+  const root = objectValue(response);
+  const record = optionalObjectValue(root.user) ?? optionalObjectValue(root.account) ?? root;
+
+  return {
+    userName: stringValue(
+      root.user_name ??
+        root.userName ??
+        root.name ??
+        root.nickname ??
+        record.user_name ??
+        record.userName ??
+        record.name ??
+        record.nickname ??
+        '사용자',
+    ) || '사용자',
+    deletedAt: stringValue(
+      root.deleted_at ??
+        root.deletedAt ??
+        root.withdrawn_at ??
+        root.withdrawnAt ??
+        root.deleted_time ??
+        record.deleted_at ??
+        record.deletedAt ??
+        record.withdrawn_at ??
+        record.withdrawnAt ??
+        record.deleted_time ??
+        new Date().toISOString(),
+    ),
   };
 }
 
