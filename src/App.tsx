@@ -26,7 +26,7 @@ import type {
   AddressCandidate,
   AccountWithdrawalResult,
   BookmarkProperty,
-  CompareResult,
+  CompareData,
   Grade,
   GradeLabel,
   RecentAddressSummary,
@@ -44,8 +44,8 @@ function App() {
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [profileType, setProfileType] = useState<UserProfileType>('SINGLE');
   const [selectedAddress, setSelectedAddress] = useState<AddressCandidate | null>(null);
-  const [compareTargets, setCompareTargets] = useState<AddressCandidate[]>([]);
-  const [currentCompare, setCurrentCompare] = useState<CompareResult | null>(null);
+  const [compareReportIds, setCompareReportIds] = useState<string[]>([]);
+  const [currentCompare, setCurrentCompare] = useState<CompareData | null>(null);
   const [recentAddresses, setRecentAddresses] = useState<RecentAddressSummary[]>([]);
   const [savedReports, setSavedReports] = useState<SavedReportPreview[]>([]);
   const [compareLoading, setCompareLoading] = useState(false);
@@ -166,23 +166,31 @@ function App() {
 
     setCompareError('');
 
-    if (compareTargets.length < 2) {
+    if (compareReportIds.length < 2) {
       setCurrentCompare(null);
       return;
     }
 
+    let cancelled = false;
     setCompareLoading(true);
     addressApi
-      .compare(compareTargets[0].id, compareTargets[1].id, accessToken)
-      .then(setCurrentCompare)
-      .catch(() => {
+      .compare(compareReportIds, accessToken)
+      .then((data) => {
+        if (!cancelled) setCurrentCompare(data);
+      })
+      .catch((e) => {
+        if (cancelled) return;
         setCurrentCompare(null);
-        setCompareError('주소 비교 API 연결에 실패했습니다.');
+        setCompareError(messageForCompareError(e));
       })
       .finally(() => {
-        setCompareLoading(false);
+        if (!cancelled) setCompareLoading(false);
       });
-  }, [screen, compareTargets, accessToken]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [screen, compareReportIds, accessToken]);
 
   const navigate = (next: Screen) => {
     setScreen(next);
@@ -215,11 +223,14 @@ function App() {
   const selectAddress = (address: AddressCandidate) => {
     setSelectedAddress(address);
     setSelectedDongCode(null);
-    setCompareTargets((current) => {
-      const withoutDuplicate = current.filter((item) => item.id !== address.id);
-      return [address, ...withoutDuplicate].slice(0, 2);
-    });
     navigate('map');
+  };
+
+  const handleStartCompare = (reportIds: string[]) => {
+    setCompareReportIds(reportIds);
+    setCurrentCompare(null);
+    setCompareError('');
+    navigate('compare');
   };
 
   const searchAddresses = useCallback((query: string) => addressApi.search(query, accessToken), [accessToken]);
@@ -376,6 +387,12 @@ function App() {
     navigate('report');
   };
 
+  const handleOpenSavedReport = (reportId: string) => {
+    setCurrentReportId(reportId);
+    setSelectedRiskType(null);
+    navigate('report');
+  };
+
   const handleToggleSavedBookmark = async (id: string) => {
     if (!accessToken || bookmarkPendingId) {
       return;
@@ -413,7 +430,7 @@ function App() {
     setAccessToken(null);
     setOnboardingStep(0);
     setSelectedAddress(null);
-    setCompareTargets([]);
+    setCompareReportIds([]);
     setCurrentCompare(null);
     setRecentAddresses([]);
     setSavedReports([]);
@@ -453,7 +470,7 @@ function App() {
     setOnboardingStep(0);
     setSelectedAddress(null);
     setSelectedDongCode(null);
-    setCompareTargets([]);
+    setCompareReportIds([]);
     setCurrentCompare(null);
     setRecentAddresses([]);
     setSavedReports([]);
@@ -507,6 +524,8 @@ function App() {
         <SavedPage
           savedReports={savedReports}
           onToggleBookmark={handleToggleSavedBookmark}
+          onOpenReport={handleOpenSavedReport}
+          onStartCompare={handleStartCompare}
           pendingBookmarkId={bookmarkPendingId}
           errorMessage={savedListError}
         />
@@ -567,7 +586,8 @@ function App() {
           compare={currentCompare}
           isLoading={compareLoading}
           errorMessage={compareError}
-          navigate={navigate}
+          onBack={() => navigate('saved')}
+          onOpenReport={handleOpenSavedReport}
         />
       )}
       {screen === 'weights' && (
@@ -722,6 +742,31 @@ function messageForCreateError(error: unknown): string {
         return serverMessage;
       }
       return '분석 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
+function messageForCompareError(error: unknown): string {
+  if (!(error instanceof ApiError)) {
+    return '주소 비교 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
+  }
+
+  switch (error.code) {
+    case 'INVALID_COMPARISON_COUNT':
+      return '비교 대상은 2~4개를 선택해 주세요.';
+    case 'INVALID_INPUT_VALUE':
+      return '비교 정보가 올바르지 않아요. 다시 시도해 주세요.';
+    case 'FORBIDDEN_REPORT':
+      return '접근할 수 없는 리포트가 포함돼 있어요.';
+    case 'REPORT_NOT_FOUND':
+      return '존재하지 않는 리포트가 포함돼 있어요.';
+    case 'INVALID_TOKEN':
+    case 'EXPIRED_TOKEN':
+      return '로그인이 만료됐어요. 다시 로그인해 주세요.';
+    case 'COMPARISON_FAILED':
+    case 'INTERNAL_SERVER_ERROR':
+      return error.message || '비교 처리 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
+    default:
+      return error.message || '주소 비교 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
   }
 }
 

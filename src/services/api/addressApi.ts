@@ -1,4 +1,4 @@
-import type { AddressCandidate, CompareResult } from '../../types/domain';
+import type { AddressCandidate, CompareData } from '../../types/domain';
 import { apiRequest } from './apiClient';
 import { apiEndpoints } from './endpoints';
 
@@ -21,9 +21,9 @@ export const addressApi = {
     return normalizeAddressCandidates(response);
   },
 
-  compare(leftAddressId: string, rightAddressId: string, token?: string | null) {
-    return apiRequest<CompareResult>(apiEndpoints.reports.compare, {
-      query: { report_ids: `${leftAddressId},${rightAddressId}` },
+  compare(reportIds: string[], token?: string | null) {
+    return apiRequest<CompareData>(apiEndpoints.addresses.compare, {
+      query: { report_ids: reportIds.join(',') },
       token: token ?? undefined,
     });
   },

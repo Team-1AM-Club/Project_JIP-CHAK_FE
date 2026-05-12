@@ -21,22 +21,62 @@ export interface RiskScore {
   summary: string;
 }
 
-export interface ReportSummary {
-  reportId: string;
-  address: AddressCandidate;
-  profileType: UserProfileType;
-  totalScore: number;
-  totalGrade: Grade;
-  analyzedAt: string;
-  oneLineSummary: string;
-  risks: RiskScore[];
+export interface CompareReportItem {
+  report_id: string;
+  address: string;
+  short_address: string;
+  region_name: string;
+  rank_label: string;
+  total_score: number;
+  grade: GradeLabel;
+  strength_tags: string[];
+  saved: boolean;
 }
 
-export interface CompareResult {
-  left: ReportSummary;
-  right: ReportSummary;
-  recommendation: string;
+export interface CompareMetricScore {
+  report_id: string;
+  score: number;
+  diff: number;
 }
+
+export type CompareMetricIcon =
+  | 'water'
+  | 'moon'
+  | 'medical'
+  | 'people'
+  | 'sound'
+  | (string & {});
+
+export interface CompareMetric {
+  type: RiskTypeWire;
+  label: string;
+  icon: CompareMetricIcon;
+  scores: CompareMetricScore[];
+  best_report_id: string;
+}
+
+export interface CompareRecommendation {
+  title: string;
+  content: string;
+  recommended_report_id: string;
+  basis: string;
+}
+
+export interface CompareData {
+  reports: CompareReportItem[];
+  metric_comparison: CompareMetric[];
+  recommendation: CompareRecommendation;
+}
+
+export type CompareErrorCode =
+  | 'INVALID_INPUT_VALUE'
+  | 'INVALID_COMPARISON_COUNT'
+  | 'INVALID_TOKEN'
+  | 'EXPIRED_TOKEN'
+  | 'FORBIDDEN_REPORT'
+  | 'REPORT_NOT_FOUND'
+  | 'COMPARISON_FAILED'
+  | 'INTERNAL_SERVER_ERROR';
 
 export type SocialProviderWire = 'kakao' | 'naver' | 'google';
 
