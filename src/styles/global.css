@@ -1615,7 +1615,7 @@ button {
 
 .user-card {
   display: grid;
-  grid-template-columns: 54px 1fr 86px;
+  grid-template-columns: 54px 1fr 58px;
   gap: 12px;
   align-items: center;
   padding: 16px;
