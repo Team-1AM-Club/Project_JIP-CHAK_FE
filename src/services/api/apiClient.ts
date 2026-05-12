@@ -95,15 +95,16 @@ function extractErrorInfo(payload: unknown): { code?: string; message?: string }
     return {};
   }
 
+  const root = payload as Record<string, unknown>;
   const error = (payload as { error?: unknown }).error;
-  if (!error || typeof error !== 'object') {
-    return {};
-  }
+  const errorRecord = error && typeof error === 'object' ? (error as Record<string, unknown>) : undefined;
 
-  const record = error as Record<string, unknown>;
+  const code = root.code ?? errorRecord?.code;
+  const message = root.message ?? errorRecord?.message;
+
   return {
-    code: typeof record.code === 'string' ? record.code : undefined,
-    message: typeof record.message === 'string' ? record.message : undefined,
+    code: typeof code === 'string' ? code : undefined,
+    message: typeof message === 'string' ? message : undefined,
   };
 }
 

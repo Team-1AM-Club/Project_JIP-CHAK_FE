@@ -1,5 +1,5 @@
 import { ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '../components/ui';
 import type { SocialProvider } from '../types/domain';
 
@@ -33,15 +33,27 @@ interface LoginPageProps {
 export function LoginPage({ onLogin, externalErrorMessage }: LoginPageProps) {
   const [pendingProvider, setPendingProvider] = useState<SocialProvider | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [dialogMessage, setDialogMessage] = useState('');
+
+  useEffect(() => {
+    if (externalErrorMessage) {
+      setDialogMessage(externalErrorMessage);
+    }
+  }, [externalErrorMessage]);
 
   const login = async (provider: SocialProvider) => {
     setPendingProvider(provider);
     setErrorMessage('');
+    setDialogMessage('');
 
     try {
       await onLogin(provider);
-    } catch {
-      setErrorMessage('소셜 로그인 요청에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : '소셜 로그인 요청에 실패했습니다. 잠시 후 다시 시도해주세요.';
+      setErrorMessage(message);
+      setDialogMessage(message);
     } finally {
       setPendingProvider(null);
     }
@@ -75,6 +87,16 @@ export function LoginPage({ onLogin, externalErrorMessage }: LoginPageProps) {
           {displayedError && <p className="login-error">{displayedError}</p>}
         </Card>
       </div>
+
+      {dialogMessage && (
+        <div className="login-error-modal-backdrop" role="presentation">
+          <div className="login-error-modal" role="dialog" aria-modal="true" aria-labelledby="login-error-title">
+            <h2 id="login-error-title">로그인할 수 없습니다</h2>
+            <p>{dialogMessage}</p>
+            <button onClick={() => setDialogMessage('')}>확인</button>
+          </div>
+        </div>
+      )}
 
       <div className="login-footer">
         <ShieldCheck size={16} />
