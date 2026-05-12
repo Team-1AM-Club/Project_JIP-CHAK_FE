@@ -267,6 +267,11 @@ function App() {
       return;
     }
 
+    if (!isInsideSeoul(selectedAddress.lat, selectedAddress.lng)) {
+      setCreateReportError('서울시 내 위치만 분석할 수 있어요. 서울 안의 다른 위치를 선택해 주세요.');
+      return;
+    }
+
     setIsCreatingReport(true);
     setCreateReportError('');
 
@@ -428,25 +433,53 @@ function createCoordinateAddress(lat: number, lng: number): AddressCandidate {
   };
 }
 
+const SEOUL_BBOX = {
+  minLat: 37.413,
+  maxLat: 37.715,
+  minLng: 126.734,
+  maxLng: 127.269,
+};
+
+function isInsideSeoul(lat: number, lng: number) {
+  return (
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    lat >= SEOUL_BBOX.minLat &&
+    lat <= SEOUL_BBOX.maxLat &&
+    lng >= SEOUL_BBOX.minLng &&
+    lng <= SEOUL_BBOX.maxLng
+  );
+}
+
 function messageForCreateError(error: unknown): string {
   if (!(error instanceof ApiError)) {
     return '분석 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
   }
 
+  const serverMessage = error.message && !error.message.startsWith('API request failed')
+    ? error.message
+    : undefined;
+
   switch (error.code) {
     case 'INVALID_INPUT_VALUE':
-      return '주소 정보가 올바르지 않습니다. 다시 선택해 주세요.';
+      return serverMessage ?? '주소 정보가 올바르지 않습니다. 다시 선택해 주세요.';
     case 'INVALID_LOCATION':
-      return '분석할 수 없는 위치입니다. 다른 위치를 선택해 주세요.';
+      return serverMessage ?? '분석할 수 없는 위치입니다. 다른 위치를 선택해 주세요.';
     case 'OUT_OF_SERVICE_AREA':
-      return '서울시 내 주소만 분석할 수 있어요.';
+      return serverMessage ?? '서울시 내 주소만 분석할 수 있어요.';
     case 'INVALID_TOKEN':
-      return '로그인이 만료됐어요. 다시 로그인해 주세요.';
+      return serverMessage ?? '로그인이 만료됐어요. 다시 로그인해 주세요.';
     case 'EXTERNAL_API_ERROR':
-      return '외부 데이터 조회에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+      return serverMessage ?? '외부 데이터 조회에 실패했습니다. 잠시 후 다시 시도해 주세요.';
     case 'ANALYSIS_FAILED':
-      return '분석 처리 중 오류가 발생했습니다. 다시 시도해 주세요.';
+      return serverMessage ?? '분석 처리 중 오류가 발생했습니다. 다시 시도해 주세요.';
     default:
+      if (serverMessage && error.code) {
+        return `${serverMessage} (${error.code})`;
+      }
+      if (serverMessage) {
+        return serverMessage;
+      }
       return '분석 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
   }
 }

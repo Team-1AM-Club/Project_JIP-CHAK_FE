@@ -165,6 +165,7 @@ export type CreateReportEnvelope =
 export type CreateReportErrorCode =
   | 'INVALID_INPUT_VALUE'
   | 'INVALID_LOCATION'
+  | 'OUT_OF_SERVICE_AREA'
   | 'INVALID_TOKEN'
   | 'EXTERNAL_API_ERROR'
   | 'ANALYSIS_FAILED';

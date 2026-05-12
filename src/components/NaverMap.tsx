@@ -112,7 +112,7 @@ export function NaverMap({ address, onLocationSelect }: NaverMapProps) {
           onLocationSelect?.(nextCenter.lat(), nextCenter.lng());
         });
 
-        window.naver.maps.Event.addListener(map, 'center_changed', () => {
+        window.naver.maps.Event.addListener(map, 'idle', () => {
           const nextCenter = map.getCenter();
           marker.setPosition(nextCenter);
           onLocationSelect?.(nextCenter.lat(), nextCenter.lng());
