@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppShell } from './components/AppShell';
 import { ComparePage } from './pages/ComparePage';
 import { HomePage } from './pages/HomePage';
@@ -40,6 +40,7 @@ function App() {
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState('');
   const [loginError, setLoginError] = useState('');
+  const mapSearchTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const callbackProvider = getProviderFromCallbackPath(window.location.pathname);
@@ -210,15 +211,23 @@ function App() {
     async (lat: number, lng: number) => {
       setSelectedAddress(createCoordinateAddress(lat, lng));
 
-      try {
-        const [candidate] = await addressApi.mapSearch(lat, lng, accessToken);
-
-        if (candidate) {
-          setSelectedAddress(candidate);
-        }
-      } catch {
-        // 좌표 fallback을 이미 표시했으므로 지도 검색 실패는 화면 전환을 막지 않습니다.
+      if (mapSearchTimerRef.current) {
+        window.clearTimeout(mapSearchTimerRef.current);
       }
+
+      mapSearchTimerRef.current = window.setTimeout(async () => {
+        try {
+          const [candidate] = await addressApi.mapSearch(lat, lng, accessToken);
+
+          if (candidate) {
+            setSelectedAddress(candidate);
+          }
+        } catch {
+          // 좌표 fallback을 이미 표시했으므로 지도 검색 실패는 화면 전환을 막지 않습니다.
+        } finally {
+          mapSearchTimerRef.current = null;
+        }
+      }, 350);
     },
     [accessToken],
   );
