@@ -1,4 +1,4 @@
-import { Bell, ChevronRight, LogOut, Moon, Settings } from 'lucide-react';
+import { Bell, ChevronRight, LogOut, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card, Header } from '../components/ui';
 import { userApi } from '../services/api';
@@ -130,8 +130,7 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
   };
 
   const cycleDarkMode = async () => {
-    const nextDarkMode: UserSettings['darkMode'] =
-      settings.darkMode === 'SYSTEM' ? 'DARK' : settings.darkMode === 'DARK' ? 'LIGHT' : 'SYSTEM';
+    const nextDarkMode: UserSettings['darkMode'] = settings.darkMode === 'DARK' ? 'LIGHT' : 'DARK';
     const nextSettings = { ...settings, darkMode: nextDarkMode };
     setSettings(nextSettings);
 
@@ -195,12 +194,11 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
 
       <MenuSection
         title="앱 설정"
-        items={[
-          ['알림 설정', settings.notificationsEnabled ? '켜짐' : '꺼짐', Bell, toggleNotifications],
-          ['다크 모드', settings.darkMode === 'SYSTEM' ? '시스템 기본' : settings.darkMode, Moon, cycleDarkMode],
-          ['데이터 출처', '서울시 공공', Settings],
-          ['로그아웃', '', LogOut, onLogout],
-        ]}
+        notificationsEnabled={settings.notificationsEnabled}
+        darkModeEnabled={settings.darkMode === 'DARK'}
+        onToggleNotifications={toggleNotifications}
+        onToggleDarkMode={cycleDarkMode}
+        onLogout={onLogout}
       />
     </div>
   );
@@ -208,24 +206,63 @@ export function MyPage({ token, onLogout }: { token: string | null; onLogout: ()
 
 function MenuSection({
   title,
-  items,
+  notificationsEnabled,
+  darkModeEnabled,
+  onToggleNotifications,
+  onToggleDarkMode,
+  onLogout,
 }: {
   title: string;
-  items: Array<[string, string, typeof Bell, (() => void | Promise<void>)?]>;
+  notificationsEnabled: boolean;
+  darkModeEnabled: boolean;
+  onToggleNotifications: () => void | Promise<void>;
+  onToggleDarkMode: () => void | Promise<void>;
+  onLogout: () => void | Promise<void>;
 }) {
   return (
     <>
       <h2 className="subhead">{title}</h2>
       <Card className="menu-card">
-        {items.map(([label, value, Icon, onClick]) => (
-          <button key={label} onClick={onClick}>
-            <Icon size={17} />
-            <span>{label}</span>
-            <em>{value}</em>
-            <ChevronRight size={16} />
-          </button>
-        ))}
+        <div className="settings-row">
+          <Bell size={17} />
+          <span>알림 설정</span>
+          <SwitchButton checked={notificationsEnabled} label="알림 설정" onClick={onToggleNotifications} />
+        </div>
+        <div className="settings-row">
+          <Moon size={17} />
+          <span>다크 모드</span>
+          <SwitchButton checked={darkModeEnabled} label="다크 모드" onClick={onToggleDarkMode} />
+        </div>
+        <button onClick={onLogout}>
+          <LogOut size={17} />
+          <span>로그아웃</span>
+          <em />
+          <ChevronRight size={16} />
+        </button>
       </Card>
     </>
+  );
+}
+
+function SwitchButton({
+  checked,
+  label,
+  onClick,
+}: {
+  checked: boolean;
+  label: string;
+  onClick: () => void | Promise<void>;
+}) {
+  return (
+    <button
+      type="button"
+      className={`setting-switch ${checked ? 'checked' : ''}`}
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={onClick}
+    >
+      <span />
+    </button>
   );
 }

@@ -1650,6 +1650,55 @@ button {
   border-bottom: 0;
 }
 
+.settings-row {
+  width: 100%;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-ink-body);
+}
+
+.setting-switch {
+  width: 58px;
+  min-height: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: #d7d9de;
+  box-shadow: inset 0 1px 2px rgb(17 24 39 / 10%);
+  transition: background 160ms ease;
+}
+
+.setting-switch span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(17 24 39 / 18%);
+  transition: transform 160ms ease;
+}
+
+.setting-switch.checked {
+  background: var(--color-primary);
+}
+
+.setting-switch.checked span {
+  transform: translateX(26px);
+}
+
+.menu-card .setting-switch {
+  width: 58px;
+  min-height: 32px;
+  border-bottom: 0;
+}
+
 @media (min-width: 860px) {
   .mobile-frame {
     --frame-width: clamp(390px, 32vw, 430px);
