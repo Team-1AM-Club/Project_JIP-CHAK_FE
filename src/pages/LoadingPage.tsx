@@ -76,22 +76,22 @@ export function LoadingPage({
       if (!isLive()) return;
 
       try {
-        const env = await reportApi.getStatus(taskId, token);
+        const result = await reportApi.getStatus(taskId, token);
 
         if (!isLive()) return;
 
-        if (env.status === 'PROCESSING') {
-          setProgress(env.data.progress);
-          setCurrentStep(env.data.current_step);
-          setCompletedSteps(env.data.completed_steps);
-          setRemainingSeconds(env.data.estimated_remaining_seconds);
+        if (result.status === 'PROCESSING') {
+          setProgress(result.progress);
+          setCurrentStep(result.current_step);
+          setCompletedSteps(result.completed_steps);
+          setRemainingSeconds(result.estimated_remaining_seconds);
           intervalMs = BASE_INTERVAL_MS;
           scheduleNext(intervalMs);
           return;
         }
 
         setProgress(100);
-        setFinalReportId(env.data.report_id);
+        setFinalReportId(result.report_id);
         setPhase('success');
       } catch (e) {
         if (!isLive()) return;

@@ -146,6 +146,7 @@ export interface CreateReportPayload {
 }
 
 export interface ReportReadyData {
+  status: 'READY';
   report_id: string;
   dong_code: string;
   dong_name: string;
@@ -156,6 +157,7 @@ export interface ReportReadyData {
 }
 
 export interface ReportProcessingData {
+  status: 'PROCESSING';
   task_id: string;
   dong_code: string;
   dong_name: string;
@@ -164,9 +166,7 @@ export interface ReportProcessingData {
   cached: false;
 }
 
-export type CreateReportEnvelope =
-  | { status: 'READY'; data: ReportReadyData }
-  | { status: 'PROCESSING'; data: ReportProcessingData };
+export type CreateReportResult = ReportReadyData | ReportProcessingData;
 
 export type CreateReportErrorCode =
   | 'INVALID_INPUT_VALUE'
@@ -177,6 +177,7 @@ export type CreateReportErrorCode =
   | 'ANALYSIS_FAILED';
 
 export interface ReportStatusProcessingData {
+  status: 'PROCESSING';
   task_id: string;
   progress: number;
   current_step: string;
@@ -185,15 +186,14 @@ export interface ReportStatusProcessingData {
 }
 
 export interface ReportStatusCompletedData {
+  status: 'COMPLETED';
   task_id: string;
   report_id: string;
   progress: number;
   completed_at: string;
 }
 
-export type ReportStatusEnvelope =
-  | { status: 'PROCESSING'; data: ReportStatusProcessingData }
-  | { status: 'COMPLETED'; data: ReportStatusCompletedData };
+export type ReportStatusResult = ReportStatusProcessingData | ReportStatusCompletedData;
 
 export type ReportStatusErrorCode =
   | 'INVALID_INPUT'

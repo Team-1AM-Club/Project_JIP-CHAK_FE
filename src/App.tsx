@@ -315,7 +315,7 @@ function App() {
       : selectedAddress.detailAddress) as string;
 
     try {
-      const env = await reportApi.create(
+      const result = await reportApi.create(
         {
           address: payloadAddress,
           ...(hasResolvedRoad ? { road_addr: selectedAddress.roadAddress } : {}),
@@ -328,16 +328,16 @@ function App() {
         accessToken,
       );
 
-      setPendingAnalysisAddress(env.data.address ?? payloadAddress);
-      setPendingDongName(env.data.dong_name ?? null);
+      setPendingAnalysisAddress(result.address ?? payloadAddress);
+      setPendingDongName(result.dong_name ?? null);
 
-      if (env.status === 'READY') {
+      if (result.status === 'READY') {
         setPendingTaskId(null);
         setPendingTaskEta(null);
-        setCurrentReportId(env.data.report_id);
+        setCurrentReportId(result.report_id);
       } else {
-        setPendingTaskId(env.data.task_id);
-        setPendingTaskEta(env.data.estimated_seconds ?? null);
+        setPendingTaskId(result.task_id);
+        setPendingTaskEta(result.estimated_seconds ?? null);
         setCurrentReportId(null);
       }
 

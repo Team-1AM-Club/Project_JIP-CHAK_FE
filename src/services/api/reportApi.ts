@@ -1,27 +1,27 @@
 import type {
   AnalysisReport,
   CongestionRiskDetail,
-  CreateReportEnvelope,
   CreateReportPayload,
+  CreateReportResult,
   FloodRiskDetail,
   MedicalRiskDetail,
   NoiseRiskDetail,
-  ReportStatusEnvelope,
+  ReportStatusResult,
   SecurityRiskDetail,
 } from '../../types/domain';
-import { apiRequest, apiRequestEnvelope } from './apiClient';
+import { apiRequest } from './apiClient';
 import { apiEndpoints } from './endpoints';
 
 export const reportApi = {
   create(payload: CreateReportPayload, token?: string | null) {
-    return apiRequestEnvelope<CreateReportEnvelope>(apiEndpoints.reports.create, {
+    return apiRequest<CreateReportResult>(apiEndpoints.reports.create, {
       method: 'POST',
       token: token ?? undefined,
       body: JSON.stringify(payload),
     });
   },
   getStatus(taskId: string, token?: string | null) {
-    return apiRequestEnvelope<ReportStatusEnvelope>(apiEndpoints.reports.status(taskId), {
+    return apiRequest<ReportStatusResult>(apiEndpoints.reports.status(taskId), {
       method: 'GET',
       token: token ?? undefined,
     });
