@@ -1601,6 +1601,11 @@ button {
   opacity: 0.45;
 }
 
+.screen-header .bookmark-toggle {
+  width: 36px;
+  height: 36px;
+}
+
 .saved-row strong,
 .saved-row small {
   overflow: hidden;
