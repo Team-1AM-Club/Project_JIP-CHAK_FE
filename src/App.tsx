@@ -76,6 +76,7 @@ function App() {
   const handleOAuthCallback = async (provider: SocialProvider) => {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
+    const state = params.get('state');
     const errorParam = params.get('error');
 
     window.history.replaceState({}, '', '/');
@@ -87,11 +88,21 @@ function App() {
       return;
     }
 
+    const expectedState = oauthSession.recallState();
+
+    if (provider === 'NAVER' && expectedState && state !== expectedState) {
+      oauthSession.clear();
+      setLoginError('로그인 인증 정보가 일치하지 않습니다. 다시 시도해주세요.');
+      setScreen('login');
+      return;
+    }
+
     try {
       const data = await authApi.login({
         provider: providerToWire(provider),
         code,
         redirect_uri: getRedirectUri(provider),
+        ...(state ? { state } : {}),
       });
 
       authStorage.saveTokens(data);
