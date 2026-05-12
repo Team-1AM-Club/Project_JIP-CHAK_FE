@@ -17,6 +17,19 @@ export const apiEndpoints = {
   },
   reports: {
     create: `${API_BASE_PATH}/reports`,
+    status: (taskId: string) => `${API_BASE_PATH}/reports/status/${encodeURIComponent(taskId)}`,
+    analysis: (reportId: string) =>
+      `${API_BASE_PATH}/reports/${encodeURIComponent(reportId)}/analysis`,
+    flood: (reportId: string) =>
+      `${API_BASE_PATH}/reports/${encodeURIComponent(reportId)}/flood`,
+    security: (reportId: string) =>
+      `${API_BASE_PATH}/reports/${encodeURIComponent(reportId)}/security`,
+    medical: (reportId: string) =>
+      `${API_BASE_PATH}/reports/${encodeURIComponent(reportId)}/medical`,
+    noise: (reportId: string) =>
+      `${API_BASE_PATH}/reports/${encodeURIComponent(reportId)}/noise`,
+    congestion: (reportId: string) =>
+      `${API_BASE_PATH}/reports/${encodeURIComponent(reportId)}/congestion`,
     compare: `${API_BASE_PATH}/reports/compare`,
   },
   bookmarks: {

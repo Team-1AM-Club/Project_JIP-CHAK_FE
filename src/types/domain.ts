@@ -167,3 +167,301 @@ export type CreateReportErrorCode =
   | 'INVALID_TOKEN'
   | 'EXTERNAL_API_ERROR'
   | 'ANALYSIS_FAILED';
+
+export interface ReportStatusProcessingData {
+  task_id: string;
+  progress: number;
+  current_step: string;
+  completed_steps: string[];
+  estimated_remaining_seconds: number;
+}
+
+export interface ReportStatusCompletedData {
+  task_id: string;
+  report_id: string;
+  progress: number;
+  completed_at: string;
+}
+
+export type ReportStatusEnvelope =
+  | { status: 'PROCESSING'; data: ReportStatusProcessingData }
+  | { status: 'COMPLETED'; data: ReportStatusCompletedData };
+
+export type ReportStatusErrorCode =
+  | 'INVALID_INPUT'
+  | 'INVALID_COORDINATES'
+  | 'OUT_OF_SERVICE_AREA'
+  | 'UNAUTHORIZED'
+  | 'TASK_NOT_FOUND'
+  | 'TOO_MANY_REQUESTS'
+  | 'EXTERNAL_API_ERROR'
+  | 'ANALYSIS_FAILED';
+
+export type RiskTypeWire =
+  | 'flood'
+  | 'security'
+  | 'medical'
+  | 'noise'
+  | 'congestion'
+  | (string & {});
+
+export type GradeLabel = '안심' | '양호' | '주의' | '경고' | (string & {});
+
+export interface AnalysisCategory {
+  type: RiskTypeWire;
+  title: string;
+  score: number;
+  grade: GradeLabel;
+  summary: string;
+}
+
+export interface AnalysisScoreSource {
+  base_score_cached: boolean;
+  weight_applied: boolean;
+}
+
+export interface AnalysisReport {
+  report_id: string;
+  address: string;
+  dong_code: string;
+  total_score: number;
+  grade: GradeLabel;
+  summary: string;
+  score_source: AnalysisScoreSource;
+  categories: AnalysisCategory[];
+  saved: boolean;
+}
+
+export type AnalysisErrorCode =
+  | 'INVALID_INPUT_VALUE'
+  | 'INVALID_TOKEN'
+  | 'EXPIRED_TOKEN'
+  | 'FORBIDDEN_REPORT'
+  | 'REPORT_NOT_FOUND'
+  | 'REGION_DATA_NOT_FOUND'
+  | 'EXTERNAL_API_ERROR'
+  | 'ANALYSIS_FAILED'
+  | 'INTERNAL_SERVER_ERROR';
+
+export type DataSourceType =
+  | 'STATIC'
+  | 'STATIC_CACHE'
+  | 'STATIC_DYNAMIC'
+  | 'CACHE'
+  | 'DYNAMIC'
+  | (string & {});
+
+export interface RiskDataSource {
+  type: DataSourceType;
+  description: string;
+}
+
+export interface RiskIndicator {
+  key: string;
+  name: string;
+  raw_value: number | string | boolean | Record<string, unknown> | null;
+  display_value: string;
+  unit: string | null;
+  score: number;
+  weight: number;
+  status: GradeLabel;
+}
+
+export type FloodLayerType = 'FLOOD_TRACE' | (string & {});
+
+export interface FloodVisualizationLayer {
+  type: FloodLayerType;
+  name: string;
+  source: string;
+}
+
+export interface FloodVisualization {
+  type: 'map' | (string & {});
+  center: { lat: number; lng: number };
+  layers: FloodVisualizationLayer[];
+}
+
+export interface FloodRiskDetail {
+  report_id: string;
+  address: string;
+  region_code: string;
+  category: 'flood';
+  title: string;
+  score: number;
+  base_score: number;
+  grade: GradeLabel;
+  summary: string;
+  indicators: RiskIndicator[];
+  visualization: FloodVisualization;
+  data_source: RiskDataSource;
+}
+
+export type SecurityLayerType =
+  | 'CCTV'
+  | 'STREET_LIGHT'
+  | 'POLICE'
+  | 'SAFE_PATH'
+  | (string & {});
+
+export interface SecurityVisualizationLayer {
+  type: SecurityLayerType;
+  name: string;
+  source: string;
+}
+
+export interface SecurityVisualization {
+  type: 'map' | (string & {});
+  center: { lat: number; lng: number };
+  layers: SecurityVisualizationLayer[];
+}
+
+export interface SecurityRiskDetail {
+  report_id: string;
+  address: string;
+  region_code: string;
+  category: 'security';
+  title: string;
+  score: number;
+  base_score: number;
+  grade: GradeLabel;
+  summary: string;
+  indicators: RiskIndicator[];
+  visualization: SecurityVisualization;
+  data_source: RiskDataSource;
+}
+
+export type MedicalLayerType =
+  | 'NIGHT_CLINIC'
+  | 'PHARMACY'
+  | 'PUBLIC_EMERGENCY'
+  | (string & {});
+
+export interface MedicalVisualizationLayer {
+  type: MedicalLayerType;
+  name: string;
+  source: string;
+}
+
+export interface MedicalVisualization {
+  type: 'map' | (string & {});
+  center: { lat: number; lng: number };
+  layers: MedicalVisualizationLayer[];
+}
+
+export interface MedicalRiskDetail {
+  report_id: string;
+  address: string;
+  region_code: string;
+  category: 'medical';
+  title: string;
+  score: number;
+  base_score: number;
+  grade: GradeLabel;
+  summary: string;
+  indicators: RiskIndicator[];
+  visualization: MedicalVisualization;
+  data_source: RiskDataSource;
+}
+
+export type NoiseLayerType =
+  | 'ROAD'
+  | 'RAIL'
+  | 'AIRCRAFT'
+  | 'NOISE_PUB'
+  | (string & {});
+
+export interface NoiseVisualizationLayer {
+  type: NoiseLayerType;
+  name: string;
+  source: string;
+}
+
+export type NoiseChartBaseDateType = 'HOURLY_AVERAGE' | (string & {});
+
+export interface NoiseVisualizationChart {
+  base_date_type: NoiseChartBaseDateType;
+  labels: string[];
+  values: number[];
+  unit?: string;
+  cached: boolean;
+}
+
+export interface NoiseVisualization {
+  type: 'map_chart' | (string & {});
+  center: { lat: number; lng: number };
+  chart: NoiseVisualizationChart;
+  layers: NoiseVisualizationLayer[];
+}
+
+export interface NoiseRiskDetail {
+  report_id: string;
+  address: string;
+  region_code: string;
+  category: 'noise';
+  title: string;
+  score: number;
+  base_score: number;
+  grade: GradeLabel;
+  summary: string;
+  indicators: RiskIndicator[];
+  visualization: NoiseVisualization;
+  data_source: RiskDataSource;
+}
+
+export type CongestionLayerType =
+  | 'BUS'
+  | 'SUBWAY'
+  | 'POPULATION'
+  | (string & {});
+
+export interface CongestionVisualizationLayer {
+  type: CongestionLayerType;
+  name: string;
+  source: string;
+}
+
+export type CongestionChartBaseDateType =
+  | 'WEEKDAY_AVERAGE'
+  | 'WEEKEND_AVERAGE'
+  | 'MONDAY_AVERAGE'
+  | (string & {});
+
+export interface CongestionVisualizationChart {
+  base_date_type: CongestionChartBaseDateType;
+  labels: string[];
+  values: number[];
+  unit?: string;
+  cached: boolean;
+}
+
+export interface CongestionVisualization {
+  type: 'chart' | (string & {});
+  chart: CongestionVisualizationChart;
+  layers: CongestionVisualizationLayer[];
+}
+
+export interface CongestionRiskDetail {
+  report_id: string;
+  address: string;
+  region_code: string;
+  category: 'congestion';
+  title: string;
+  score: number;
+  base_score: number;
+  grade: GradeLabel;
+  summary: string;
+  indicators: RiskIndicator[];
+  visualization: CongestionVisualization;
+  data_source: RiskDataSource;
+}
+
+export type RiskDetailErrorCode =
+  | 'INVALID_INPUT_VALUE'
+  | 'INVALID_TOKEN'
+  | 'EXPIRED_TOKEN'
+  | 'FORBIDDEN_REPORT'
+  | 'REPORT_NOT_FOUND'
+  | 'REGION_DATA_NOT_FOUND'
+  | 'EXTERNAL_API_ERROR'
+  | 'ANALYSIS_FAILED'
+  | 'INTERNAL_SERVER_ERROR';
