@@ -26,6 +26,7 @@ import type {
   AddressCandidate,
   AccountWithdrawalResult,
   BookmarkProperty,
+  CompareAddressInput,
   CompareData,
   Grade,
   GradeLabel,
@@ -166,31 +167,88 @@ function App() {
 
     setCompareError('');
 
-    if (compareReportIds.length < 2) {
+    if (compareReportIds.length !== 2) {
       setCurrentCompare(null);
       return;
     }
 
     let cancelled = false;
+    let pollTimer: number | null = null;
     setCompareLoading(true);
-    reportApi
-      .compare(compareReportIds, accessToken)
-      .then((data) => {
-        if (!cancelled) setCurrentCompare(data);
-      })
-      .catch((e) => {
+
+    const pollStatus = async (taskId: string) => {
+      if (cancelled) return;
+      try {
+        const status = await reportApi.getCompareStatus(taskId, accessToken);
+        if (cancelled) return;
+        if (status.status === 'COMPLETED') {
+          setCurrentCompare(status.data);
+          setCompareLoading(false);
+        } else {
+          pollTimer = window.setTimeout(() => {
+            void pollStatus(taskId);
+          }, 3000);
+        }
+      } catch (e) {
         if (cancelled) return;
         setCurrentCompare(null);
         setCompareError(messageForCompareError(e));
-      })
-      .finally(() => {
-        if (!cancelled) setCompareLoading(false);
-      });
+        setCompareLoading(false);
+      }
+    };
+
+    const run = async () => {
+      try {
+        const addresses = await Promise.all(
+          compareReportIds.map(async (reportId): Promise<CompareAddressInput> => {
+            const saved = savedReports.find((item) => item.reportId === reportId);
+            if (!saved) {
+              throw new Error('SAVED_REPORT_NOT_FOUND');
+            }
+            const candidates = await addressApi.search(saved.address, accessToken);
+            const candidate = candidates[0];
+            if (!candidate) {
+              throw new Error('ADDRESS_RESOLUTION_FAILED');
+            }
+            return {
+              address: saved.address,
+              ...(candidate.roadAddress ? { road_addr: candidate.roadAddress } : {}),
+              ...(candidate.detailAddress ? { jibun_addr: candidate.detailAddress } : {}),
+              lat: candidate.lat,
+              lng: candidate.lng,
+              source: 'search',
+            };
+          }),
+        );
+
+        if (cancelled) return;
+
+        const result = await reportApi.compare({ addresses }, accessToken);
+        if (cancelled) return;
+
+        if (result.status === 'READY') {
+          setCurrentCompare(result);
+          setCompareLoading(false);
+        } else {
+          void pollStatus(result.task_id);
+        }
+      } catch (e) {
+        if (cancelled) return;
+        setCurrentCompare(null);
+        setCompareError(messageForCompareError(e));
+        setCompareLoading(false);
+      }
+    };
+
+    void run();
 
     return () => {
       cancelled = true;
+      if (pollTimer !== null) {
+        window.clearTimeout(pollTimer);
+      }
     };
-  }, [screen, compareReportIds, accessToken]);
+  }, [screen, compareReportIds, accessToken, savedReports]);
 
   const navigate = (next: Screen) => {
     setScreen(next);
@@ -763,19 +821,28 @@ function messageForCreateError(error: unknown): string {
 }
 
 function messageForCompareError(error: unknown): string {
+  if (error instanceof Error && !(error instanceof ApiError)) {
+    if (error.message === 'SAVED_REPORT_NOT_FOUND') {
+      return '비교 대상 매물 정보를 찾을 수 없어요. 저장 목록을 새로고침해 주세요.';
+    }
+    if (error.message === 'ADDRESS_RESOLUTION_FAILED') {
+      return '주소를 다시 확인할 수 없었어요. 잠시 후 다시 시도해 주세요.';
+    }
+  }
+
   if (!(error instanceof ApiError)) {
     return '주소 비교 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.';
   }
 
   switch (error.code) {
     case 'INVALID_COMPARISON_COUNT':
-      return '비교 대상은 2~4개를 선택해 주세요.';
+      return '비교 대상은 정확히 2개여야 해요.';
     case 'INVALID_INPUT_VALUE':
       return '비교 정보가 올바르지 않아요. 다시 시도해 주세요.';
-    case 'FORBIDDEN_REPORT':
-      return '접근할 수 없는 리포트가 포함돼 있어요.';
-    case 'REPORT_NOT_FOUND':
-      return '존재하지 않는 리포트가 포함돼 있어요.';
+    case 'OUT_OF_SERVICE_AREA':
+      return '서울시 내 주소만 비교할 수 있어요.';
+    case 'TASK_NOT_FOUND':
+      return '비교 작업이 만료됐어요. 다시 시도해 주세요.';
     case 'INVALID_TOKEN':
     case 'EXPIRED_TOKEN':
       return '로그인이 만료됐어요. 다시 로그인해 주세요.';

@@ -32,6 +32,8 @@ export const apiEndpoints = {
     congestion: (reportId: string) =>
       `${API_BASE_PATH}/reports/${encodeURIComponent(reportId)}/congestion`,
     compare: `${API_BASE_PATH}/reports/compare`,
+    compareStatus: (taskId: string) =>
+      `${API_BASE_PATH}/reports/compare/status/${encodeURIComponent(taskId)}`,
   },
   bookmarks: {
     properties: `${API_BASE_PATH}/bookmarks/properties`,

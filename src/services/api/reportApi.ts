@@ -1,7 +1,9 @@
 import type {
   AnalysisReport,
-  CompareData,
+  CompareStatusResult,
   CongestionRiskDetail,
+  CreateComparePayload,
+  CreateCompareResult,
   CreateReportPayload,
   CreateReportResult,
   FloodRiskDetail,
@@ -63,11 +65,17 @@ export const reportApi = {
       token: token ?? undefined,
     });
   },
-  compare(reportIds: string[], token?: string | null) {
-    return apiRequest<CompareData>(apiEndpoints.reports.compare, {
+  compare(payload: CreateComparePayload, token?: string | null) {
+    return apiRequest<CreateCompareResult>(apiEndpoints.reports.compare, {
+      method: 'POST',
+      token: token ?? undefined,
+      body: JSON.stringify(payload),
+    });
+  },
+  getCompareStatus(taskId: string, token?: string | null) {
+    return apiRequest<CompareStatusResult>(apiEndpoints.reports.compareStatus(taskId), {
       method: 'GET',
       token: token ?? undefined,
-      query: { report_ids: reportIds.join(',') },
     });
   },
 };

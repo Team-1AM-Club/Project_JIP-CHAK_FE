@@ -68,13 +68,57 @@ export interface CompareData {
   recommendation: CompareRecommendation;
 }
 
+export type CompareAddressSource = 'search' | 'map';
+
+export interface CompareAddressInput {
+  address: string;
+  road_addr?: string;
+  jibun_addr?: string;
+  lat: number;
+  lng: number;
+  dong_code?: string;
+  source: CompareAddressSource;
+}
+
+export interface CreateComparePayload {
+  addresses: CompareAddressInput[];
+}
+
+export interface CompareReadyResult extends CompareData {
+  status: 'READY';
+}
+
+export interface CompareProcessingResult {
+  status: 'PROCESSING';
+  task_id: string;
+}
+
+export type CreateCompareResult = CompareReadyResult | CompareProcessingResult;
+
+export interface CompareStatusProcessingData {
+  status: 'PROCESSING';
+  progress: number;
+  current_step: string;
+  completed_addresses: number;
+}
+
+export interface CompareStatusCompletedData {
+  status: 'COMPLETED';
+  progress: number;
+  data: CompareData;
+}
+
+export type CompareStatusResult =
+  | CompareStatusProcessingData
+  | CompareStatusCompletedData;
+
 export type CompareErrorCode =
   | 'INVALID_INPUT_VALUE'
   | 'INVALID_COMPARISON_COUNT'
+  | 'OUT_OF_SERVICE_AREA'
   | 'INVALID_TOKEN'
   | 'EXPIRED_TOKEN'
-  | 'FORBIDDEN_REPORT'
-  | 'REPORT_NOT_FOUND'
+  | 'TASK_NOT_FOUND'
   | 'COMPARISON_FAILED'
   | 'INTERNAL_SERVER_ERROR';
 

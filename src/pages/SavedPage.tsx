@@ -12,7 +12,7 @@ interface SavedPageProps {
   errorMessage?: string;
 }
 
-const MAX_COMPARE = 4;
+const MAX_COMPARE = 2;
 
 export function SavedPage({
   savedReports = [],
@@ -52,7 +52,7 @@ export function SavedPage({
     setSelectedIds([]);
   };
 
-  const canCompare = selectedIds.length >= 2 && selectedIds.length <= MAX_COMPARE;
+  const canCompare = selectedIds.length === MAX_COMPARE;
   const compareDisabled = comparableReports.length < 2 || !onStartCompare;
 
   const handleCompare = () => {
@@ -81,7 +81,7 @@ export function SavedPage({
       {errorMessage && <p className="inline-error">{errorMessage}</p>}
 
       {compareMode && (
-        <p className="inline-status">비교할 매물을 2~4개 선택하세요 ({selectedIds.length}/{MAX_COMPARE})</p>
+        <p className="inline-status">비교할 매물을 2개 선택하세요 ({selectedIds.length}/{MAX_COMPARE})</p>
       )}
 
       {savedReports.length === 0 ? (
@@ -155,7 +155,7 @@ export function SavedPage({
       {compareMode && (
         <div className="compare-cta-bar">
           <Button variant="primary" onClick={handleCompare} disabled={!canCompare}>
-            비교하기 ({selectedIds.length})
+            비교하기 ({selectedIds.length}/{MAX_COMPARE})
           </Button>
         </div>
       )}
