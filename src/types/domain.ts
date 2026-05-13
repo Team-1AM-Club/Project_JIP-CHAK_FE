@@ -68,7 +68,7 @@ export interface CompareData {
   recommendation: CompareRecommendation;
 }
 
-export type CompareAddressSource = 'search' | 'map';
+export type CompareAddressSource = 'SEARCH' | 'MAP';
 
 export interface CompareAddressInput {
   address: string;
