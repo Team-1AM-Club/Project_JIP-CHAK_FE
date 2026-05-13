@@ -11,7 +11,8 @@ import {
   Volume2,
   X,
 } from 'lucide-react';
-import { Button, Card, Header, LoadingState, RiskBadge } from '../components/ui';
+import { ScoreGauge } from '../components/ScoreGauge';
+import { Button, Card, Header, LoadingState } from '../components/ui';
 import type {
   CompareData,
   CompareMetric,
@@ -161,12 +162,13 @@ function CompareSlotCard({ label, slot, report, showScore, onAdd, onRemove, onOp
         <strong>{displayAddress}</strong>
         {region && <small>{region}</small>}
         {showScore && report ? (
-          <div className="compare-slot-score">
-            <div className={`compare-slot-score-value text-grade-${grade.toLowerCase()}`}>
-              <strong>{report.total_score}</strong>
-              <em>/100</em>
-            </div>
-            <RiskBadge grade={grade} />
+          <div className="compare-slot-gauge">
+            <ScoreGauge
+              score={report.total_score}
+              grade={grade}
+              variant="circle"
+              compact
+            />
           </div>
         ) : (
           <div className="compare-slot-pending">

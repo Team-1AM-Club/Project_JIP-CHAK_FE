@@ -1638,12 +1638,15 @@ button {
 }
 
 .compare-metric-cell {
-  position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
+  gap: 6px;
   min-width: 0;
+  padding: 2px 0;
+  line-height: 1;
 }
 
 .compare-metric-cell.is-best {
@@ -1651,9 +1654,10 @@ button {
 }
 
 .compare-metric-trophy {
-  position: absolute;
-  top: -10px;
+  display: inline-flex;
+  align-items: center;
   color: var(--color-watch);
+  flex-shrink: 0;
 }
 
 .compare-metric-score {
@@ -1661,16 +1665,21 @@ button {
   font-weight: 800;
   letter-spacing: -0.3px;
   font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .compare-metric-diff {
+  display: inline-flex;
+  align-items: center;
   font-size: 10px;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 2px 6px;
   border-radius: 999px;
   background: rgba(26, 37, 64, 0.06);
   color: var(--color-ink-muted);
   font-variant-numeric: tabular-nums;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .compare-metric-diff.is-positive {
@@ -2748,7 +2757,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 18px 4px 0;
+  padding: 30px 4px 0;
   background: transparent;
   border: 0;
   text-align: left;
@@ -2786,17 +2795,20 @@ button {
   display: flex;
   align-items: baseline;
   gap: 2px;
+  line-height: 1;
 }
 
 .compare-slot-score-value strong {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
+  line-height: 1;
 }
 
 .compare-slot-score-value em {
   font-style: normal;
   font-size: 11px;
   color: var(--color-ink-muted);
+  line-height: 1;
 }
 
 .compare-slot-pending {
@@ -2806,4 +2818,26 @@ button {
   gap: 4px;
   font-size: 11px;
   color: var(--color-ink-muted);
+}
+
+.compare-slot-gauge {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding-top: 8px;
+}
+
+.compare-slot-gauge .circle-score-gauge-compact {
+  width: 92px;
+  height: 92px;
+}
+
+.compare-slot-gauge .circle-score-gauge-compact .circle-score-center {
+  width: 64px;
+  height: 64px;
+}
+
+.compare-slot-gauge .circle-score-gauge-compact .circle-score-center strong {
+  font-size: 22px;
 }
