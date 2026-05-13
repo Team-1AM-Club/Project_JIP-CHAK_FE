@@ -540,7 +540,8 @@ function App() {
     setAccessToken(null);
     setOnboardingStep(0);
     setSelectedAddress(null);
-    setCompareReportIds([]);
+    setCompareSlots([null, null]);
+    setCompareSlotTargetIndex(null);
     setCurrentCompare(null);
     setRecentAddresses([]);
     setSavedReports([]);
@@ -580,7 +581,8 @@ function App() {
     setOnboardingStep(0);
     setSelectedAddress(null);
     setSelectedDongCode(null);
-    setCompareReportIds([]);
+    setCompareSlots([null, null]);
+    setCompareSlotTargetIndex(null);
     setCurrentCompare(null);
     setRecentAddresses([]);
     setSavedReports([]);
