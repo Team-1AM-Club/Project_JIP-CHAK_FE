@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Bookmark } from 'lucide-react';
 import { RiskRadar } from '../components/RiskChart';
 import { ScoreGauge } from '../components/ScoreGauge';
-import { Button, Card, Header, RiskBadge, ScorePill } from '../components/ui';
+import { Button, Card, Header, LoadingState, RiskBadge, ScorePill } from '../components/ui';
 import { ApiError, bookmarkApi, reportApi } from '../services/api';
 import type {
   AnalysisCategory,
@@ -98,7 +98,7 @@ export function ReportPage({
     return (
       <div className="screen">
         <Header title="리포트" onBack={onBack} action={<span />} />
-        <p className="lead">리포트를 불러오고 있어요…</p>
+        <LoadingState message="리포트를 불러오고 있어요…" />
       </div>
     );
   }

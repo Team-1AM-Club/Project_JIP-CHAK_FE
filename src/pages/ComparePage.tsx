@@ -1,83 +1,74 @@
 import type { ReactNode } from 'react';
 import {
   CloudRain,
+  MapPin,
   Moon,
+  Plus,
   Sparkles,
   Stethoscope,
   Trophy,
   Users,
   Volume2,
+  X,
 } from 'lucide-react';
-import { Button, Card, Header, RiskBadge } from '../components/ui';
+import { Button, Card, Header, LoadingState, RiskBadge } from '../components/ui';
 import type {
   CompareData,
   CompareMetric,
   CompareMetricIcon,
+  CompareReportItem,
+  CompareSlot,
   Grade,
   GradeLabel,
 } from '../types/domain';
 
 interface ComparePageProps {
+  slots: (CompareSlot | null)[];
   compare: CompareData | null;
   isLoading: boolean;
   errorMessage: string;
   onBack: () => void;
+  onAddSlot: (index: number) => void;
+  onRemoveSlot: (index: number) => void;
   onOpenReport?: (reportId: string) => void;
 }
 
+const SLOT_LABELS = ['A', 'B'];
+
 export function ComparePage({
+  slots,
   compare,
   isLoading,
   errorMessage,
   onBack,
+  onAddSlot,
+  onRemoveSlot,
   onOpenReport,
 }: ComparePageProps) {
   return (
     <div className="screen compare-screen">
       <Header title="주소 비교" onBack={onBack} action={<span />} />
 
-      {isLoading && <p className="inline-status">비교 결과를 불러오는 중이에요…</p>}
+      <div className="compare-slot-grid">
+        {[0, 1].map((index) => (
+          <CompareSlotCard
+            key={index}
+            label={SLOT_LABELS[index]}
+            slot={slots[index] ?? null}
+            report={compare?.reports[index] ?? null}
+            showScore={Boolean(compare) && !isLoading}
+            onAdd={() => onAddSlot(index)}
+            onRemove={() => onRemoveSlot(index)}
+            onOpen={onOpenReport}
+          />
+        ))}
+      </div>
+
       {errorMessage && <p className="inline-error">{errorMessage}</p>}
+      {isLoading && <LoadingState message="비교 결과를 불러오는 중이에요…" />}
 
-      {!compare && !isLoading && !errorMessage && (
-        <Card className="empty-home-card">
-          <strong>비교할 리포트가 없어요</strong>
-          <p>저장 목록에서 2~4개의 매물을 선택해 비교를 시작하세요.</p>
-        </Card>
-      )}
-
-      {compare && (
+      {compare && !isLoading && (
         <>
-          <div className="compare-cards">
-            {compare.reports.map((report) => {
-              const grade = gradeFromLabel(report.grade);
-              const clickable = Boolean(onOpenReport);
-              return (
-                <Card
-                  key={report.report_id}
-                  className="compare-score-card"
-                  onClick={clickable ? () => onOpenReport?.(report.report_id) : undefined}
-                >
-                  <span className="compare-rank">{report.rank_label}</span>
-                  <h2>{report.short_address}</h2>
-                  <small>{report.region_name}</small>
-                  <div className={`compare-score-value text-grade-${grade.toLowerCase()}`}>
-                    <strong>{report.total_score}</strong>
-                    <em>/100</em>
-                  </div>
-                  <RiskBadge grade={grade} />
-                  {report.strength_tags.length > 0 && (
-                    <ul className="compare-strength-tags">
-                      {report.strength_tags.map((tag) => (
-                        <li key={tag}>{tag}</li>
-                      ))}
-                    </ul>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
-
           {compare.metric_comparison.length > 0 && (
             <>
               <h2 className="subhead">항목별 비교</h2>
@@ -123,6 +114,81 @@ export function ComparePage({
       )}
     </div>
   );
+}
+
+interface CompareSlotCardProps {
+  label: string;
+  slot: CompareSlot | null;
+  report: CompareReportItem | null;
+  showScore: boolean;
+  onAdd: () => void;
+  onRemove: () => void;
+  onOpen?: (reportId: string) => void;
+}
+
+function CompareSlotCard({ label, slot, report, showScore, onAdd, onRemove, onOpen }: CompareSlotCardProps) {
+  if (!slot) {
+    return (
+      <button type="button" className="compare-slot compare-slot-empty" onClick={onAdd}>
+        <Plus size={28} />
+        <span>주소 추가</span>
+      </button>
+    );
+  }
+
+  const displayAddress = shortenAddress(slot);
+  const region = slot.candidate.gu || '';
+  const grade = report ? gradeFromLabel(report.grade) : 'NORMAL';
+  const clickable = Boolean(report && onOpen);
+
+  return (
+    <div className={`compare-slot compare-slot-filled ${showScore ? `grade-${grade.toLowerCase()}` : ''}`}>
+      <span className="compare-slot-label">{label}</span>
+      <button
+        type="button"
+        className="compare-slot-remove"
+        onClick={onRemove}
+        aria-label="비교군 제거"
+      >
+        <X size={14} />
+      </button>
+      <button
+        type="button"
+        className="compare-slot-body"
+        onClick={clickable && report ? () => onOpen?.(report.report_id) : undefined}
+        disabled={!clickable}
+      >
+        <strong>{displayAddress}</strong>
+        {region && <small>{region}</small>}
+        {showScore && report ? (
+          <div className="compare-slot-score">
+            <div className={`compare-slot-score-value text-grade-${grade.toLowerCase()}`}>
+              <strong>{report.total_score}</strong>
+              <em>/100</em>
+            </div>
+            <RiskBadge grade={grade} />
+          </div>
+        ) : (
+          <div className="compare-slot-pending">
+            <MapPin size={14} />
+            <span>대기 중</span>
+          </div>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function shortenAddress(slot: CompareSlot): string {
+  const jibun = slot.candidate.detailAddress.trim();
+  const road = slot.candidate.roadAddress.trim();
+  const source = jibun || road;
+  if (!source) return slot.candidate.dong || '선택한 위치';
+  const tokens = source.split(/\s+/).filter(Boolean);
+  if (tokens.length >= 2) {
+    return `${tokens[tokens.length - 2]} ${tokens[tokens.length - 1]}`;
+  }
+  return tokens[0] ?? source;
 }
 
 interface MetricRowProps {
@@ -214,4 +280,3 @@ function gradeFromLabel(label: GradeLabel): Grade {
       return 'NORMAL';
   }
 }
-

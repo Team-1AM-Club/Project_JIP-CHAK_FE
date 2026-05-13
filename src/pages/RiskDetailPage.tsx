@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CloudRain, ShieldCheck, Stethoscope, Users, Volume2 } from 'lucide-react';
-import { Button, Card, Header, RiskBadge } from '../components/ui';
+import { Button, Card, Header, LoadingState, RiskBadge } from '../components/ui';
 import { ApiError, reportApi } from '../services/api';
 import type {
   CongestionRiskDetail,
@@ -60,7 +60,7 @@ export function RiskDetailPage({ reportId, riskType, token, onBack }: RiskDetail
     return (
       <div className="screen">
         <Header title="리스크 상세" onBack={onBack} action={<span />} />
-        <p className="lead">정보를 불러오고 있어요…</p>
+        <LoadingState message="정보를 불러오고 있어요…" />
       </div>
     );
   }
@@ -115,12 +115,13 @@ export function RiskDetailPage({ reportId, riskType, token, onBack }: RiskDetail
           <div className="risk-indicator-grid">
             {detail.indicators.map((ind) => {
               const indGrade = gradeFromLabel(ind.status);
+              const showUnit = ind.unit && !ind.display_value.trim().endsWith(ind.unit);
               return (
                 <div key={ind.key} className="risk-indicator-card">
                   <div className="risk-indicator-name">{ind.name}</div>
                   <div className="risk-indicator-value">
                     <span className={`text-grade-${indGrade.toLowerCase()}`}>{ind.display_value}</span>
-                    {ind.unit && <em>{ind.unit}</em>}
+                    {showUnit && <em>{ind.unit}</em>}
                   </div>
                   <div className="risk-indicator-meta">
                     <RiskBadge grade={indGrade} />

@@ -1,6 +1,6 @@
 import { ArrowRight, Map, Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Card, Header } from '../components/ui';
+import { Card, Header, SkeletonRow, Spinner } from '../components/ui';
 import type { AddressCandidate } from '../types/domain';
 
 export function SearchPage({
@@ -74,24 +74,35 @@ export function SearchPage({
         <ArrowRight size={16} />
       </Card>
 
-      <h2 className="subhead">검색 결과</h2>
-      {isSearching && <p className="inline-status">주소 검색 중...</p>}
+      <h2 className="subhead">
+        검색 결과
+        {isSearching && <Spinner size={14} label="주소 검색 중" />}
+      </h2>
       {errorMessage && <p className="inline-error">{errorMessage}</p>}
       {!query.trim() && <p className="empty-message">검색어를 입력하면 주소 검색 API 결과가 표시됩니다.</p>}
+      {query.trim() && isSearching && (
+        <div className="search-skeleton">
+          <SkeletonRow />
+          <SkeletonRow />
+          <SkeletonRow />
+        </div>
+      )}
       {query.trim() && !isSearching && !errorMessage && results.length === 0 && (
         <p className="empty-message">검색 결과가 없습니다.</p>
       )}
-      <div className="search-results">
-        {results.map((candidate) => (
-          <button key={candidate.id} onClick={() => selectAddress(candidate)}>
-            <span className="pin-dot" />
-            <span>
-              <strong>{candidate.roadAddress}</strong>
-              <small>{candidate.detailAddress}</small>
-            </span>
-          </button>
-        ))}
-      </div>
+      {!isSearching && (
+        <div className="search-results">
+          {results.map((candidate) => (
+            <button key={candidate.id} onClick={() => selectAddress(candidate)}>
+              <span className="pin-dot" />
+              <span>
+                <strong>{candidate.roadAddress}</strong>
+                <small>{candidate.detailAddress}</small>
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

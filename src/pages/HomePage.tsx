@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react';
 import { ArrowRight, BarChart2, Bell, Bookmark, ChevronRight, Map, MapPin } from 'lucide-react';
-import { Card, Header, IconButton } from '../components/ui';
+import { Card, Header, IconButton, SkeletonReportCard } from '../components/ui';
 import type { Grade, RecentAddressSummary, SavedReportPreview, Screen } from '../types/domain';
 
 interface HomePageProps {
   navigate: (screen: Screen) => void;
   recentAddresses?: RecentAddressSummary[];
   savedReports?: SavedReportPreview[];
+  isLoadingSaved?: boolean;
   onOpenReport?: (reportId: string) => void;
 }
 
@@ -14,6 +15,7 @@ export function HomePage({
   navigate,
   recentAddresses = [],
   savedReports = [],
+  isLoadingSaved = false,
   onOpenReport,
 }: HomePageProps) {
   const hasHomeData = recentAddresses.length > 0 || savedReports.length > 0;
@@ -71,6 +73,15 @@ export function HomePage({
         </HomeSection>
       )}
 
+      {isLoadingSaved && savedReports.length === 0 && (
+        <HomeSection title="저장한 리포트" actionLabel="" onAction={() => navigate('saved')}>
+          <div className="saved-preview">
+            <SkeletonReportCard />
+            <SkeletonReportCard />
+          </div>
+        </HomeSection>
+      )}
+
       {savedReports.length > 0 && (
         <HomeSection title="저장한 리포트" actionLabel={`${savedReports.length}개`} onAction={() => navigate('saved')}>
           <div className="saved-preview">
@@ -123,9 +134,11 @@ function HomeSection({
     <section className="home-data-section">
       <div className="section-title">
         <h2>{title}</h2>
-        <button onClick={onAction}>
-          {actionLabel} <ChevronRight size={14} />
-        </button>
+        {actionLabel && (
+          <button onClick={onAction}>
+            {actionLabel} <ChevronRight size={14} />
+          </button>
+        )}
       </div>
       {children}
     </section>

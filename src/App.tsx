@@ -28,6 +28,7 @@ import type {
   BookmarkProperty,
   CompareAddressInput,
   CompareData,
+  CompareSlot,
   Grade,
   GradeLabel,
   RecentAddressSummary,
@@ -45,10 +46,12 @@ function App() {
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [profileType, setProfileType] = useState<UserProfileType>('SINGLE');
   const [selectedAddress, setSelectedAddress] = useState<AddressCandidate | null>(null);
-  const [compareReportIds, setCompareReportIds] = useState<string[]>([]);
+  const [compareSlots, setCompareSlots] = useState<(CompareSlot | null)[]>([null, null]);
+  const [compareSlotTargetIndex, setCompareSlotTargetIndex] = useState<number | null>(null);
   const [currentCompare, setCurrentCompare] = useState<CompareData | null>(null);
   const [recentAddresses, setRecentAddresses] = useState<RecentAddressSummary[]>([]);
   const [savedReports, setSavedReports] = useState<SavedReportPreview[]>([]);
+  const [savedReportsLoading, setSavedReportsLoading] = useState(false);
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareError, setCompareError] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -143,9 +146,11 @@ function App() {
   const refreshSavedReports = useCallback(() => {
     if (!accessToken) {
       setSavedReports([]);
+      setSavedReportsLoading(false);
       return;
     }
 
+    setSavedReportsLoading(true);
     bookmarkApi
       .getProperties({}, accessToken)
       .then((data) => {
@@ -153,6 +158,9 @@ function App() {
       })
       .catch(() => {
         setSavedReports([]);
+      })
+      .finally(() => {
+        setSavedReportsLoading(false);
       });
   }, [accessToken]);
 
@@ -165,15 +173,19 @@ function App() {
       return;
     }
 
-    setCompareError('');
+    const slot0 = compareSlots[0];
+    const slot1 = compareSlots[1];
 
-    if (compareReportIds.length !== 2) {
+    if (!slot0 || !slot1) {
       setCurrentCompare(null);
+      setCompareError('');
+      setCompareLoading(false);
       return;
     }
 
     let cancelled = false;
     let pollTimer: number | null = null;
+    setCompareError('');
     setCompareLoading(true);
 
     const pollStatus = async (taskId: string) => {
@@ -199,32 +211,10 @@ function App() {
 
     const run = async () => {
       try {
-        const addresses = await Promise.all(
-          compareReportIds.map(async (reportId): Promise<CompareAddressInput> => {
-            const saved = savedReports.find((item) => item.reportId === reportId);
-            if (!saved) {
-              throw new Error('SAVED_REPORT_NOT_FOUND');
-            }
-            const candidates = await addressApi.search(saved.address, accessToken);
-            const candidate = candidates[0];
-            if (!candidate) {
-              throw new Error('ADDRESS_RESOLUTION_FAILED');
-            }
-            return {
-              address: saved.address,
-              ...(candidate.roadAddress ? { road_addr: candidate.roadAddress } : {}),
-              ...(candidate.detailAddress ? { jibun_addr: candidate.detailAddress } : {}),
-              lat: candidate.lat,
-              lng: candidate.lng,
-              ...(candidate.dongCode ? { dong_code: candidate.dongCode } : {}),
-              source: 'SEARCH',
-            };
-          }),
-        );
+        const addresses: CompareAddressInput[] = [slotToCompareInput(slot0), slotToCompareInput(slot1)];
 
         if (cancelled) return;
 
-        console.log('[compare payload]', JSON.stringify({ addresses }, null, 2));
         const result = await reportApi.compare({ addresses }, accessToken);
         if (cancelled) return;
 
@@ -250,7 +240,7 @@ function App() {
         window.clearTimeout(pollTimer);
       }
     };
-  }, [screen, compareReportIds, accessToken, savedReports]);
+  }, [screen, compareSlots, accessToken]);
 
   const navigate = (next: Screen) => {
     setScreen(next);
@@ -286,11 +276,27 @@ function App() {
     navigate('map');
   };
 
-  const handleStartCompare = (reportIds: string[]) => {
-    setCompareReportIds(reportIds);
+  const handleAddCompareSlot = (index: number) => {
+    setCompareSlotTargetIndex(index);
+    setSelectedAddress(null);
+    setSelectedDongCode(null);
+    setCreateReportError('');
+    navigate('map');
+  };
+
+  const handleRemoveCompareSlot = (index: number) => {
+    setCompareSlots((prev) => {
+      const next = [...prev];
+      next[index] = null;
+      return next;
+    });
     setCurrentCompare(null);
     setCompareError('');
-    navigate('compare');
+  };
+
+  const handleCompareBack = () => {
+    setCompareSlotTargetIndex(null);
+    navigate('home');
   };
 
   const searchAddresses = useCallback((query: string) => addressApi.search(query, accessToken), [accessToken]);
@@ -379,6 +385,25 @@ function App() {
 
     if (!hasResolvedRoad && !hasResolvedJibun) {
       setCreateReportError('주소를 불러오고 있어요. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
+    if (compareSlotTargetIndex !== null) {
+      const slotIndex = compareSlotTargetIndex;
+      setCompareSlots((prev) => {
+        const next = [...prev];
+        next[slotIndex] = {
+          candidate: selectedAddress,
+          ...(selectedDongCode ? { dongCode: selectedDongCode } : {}),
+        };
+        return next;
+      });
+      setCompareSlotTargetIndex(null);
+      setCurrentCompare(null);
+      setCompareError('');
+      setSelectedAddress(null);
+      setSelectedDongCode(null);
+      navigate('compare');
       return;
     }
 
@@ -583,9 +608,9 @@ function App() {
       {screen === 'saved' && (
         <SavedPage
           savedReports={savedReports}
+          isLoading={savedReportsLoading}
           onToggleBookmark={handleToggleSavedBookmark}
           onOpenReport={handleOpenSavedReport}
-          onStartCompare={handleStartCompare}
           pendingBookmarkId={bookmarkPendingId}
           errorMessage={savedListError}
         />
@@ -595,6 +620,7 @@ function App() {
           navigate={navigate}
           recentAddresses={recentAddresses}
           savedReports={savedReports}
+          isLoadingSaved={savedReportsLoading}
           onOpenReport={handleOpenSavedReport}
         />
       )}
@@ -609,12 +635,20 @@ function App() {
       {screen === 'map' && (
         <MapSelectPage
           address={selectedAddress}
-          onBack={() => navigate('search')}
+          onBack={() => {
+            if (compareSlotTargetIndex !== null) {
+              setCompareSlotTargetIndex(null);
+              navigate('compare');
+            } else {
+              navigate('search');
+            }
+          }}
           confirm={confirmSelectedAddress}
           onPickLocation={pickLocationOnMap}
           onAddressResolved={handleAddressResolved}
           isSubmitting={isCreatingReport}
           errorMessage={createReportError}
+          confirmLabel={compareSlotTargetIndex !== null ? '비교군에 추가' : undefined}
         />
       )}
       {screen === 'loading' && (
@@ -648,10 +682,13 @@ function App() {
       )}
       {screen === 'compare' && (
         <ComparePage
+          slots={compareSlots}
           compare={currentCompare}
           isLoading={compareLoading}
           errorMessage={compareError}
-          onBack={() => navigate('saved')}
+          onBack={handleCompareBack}
+          onAddSlot={handleAddCompareSlot}
+          onRemoveSlot={handleRemoveCompareSlot}
           onOpenReport={handleOpenSavedReport}
         />
       )}
@@ -669,6 +706,20 @@ function App() {
       )}
     </AppShell>
   );
+}
+
+function slotToCompareInput(slot: CompareSlot): CompareAddressInput {
+  const { candidate, dongCode } = slot;
+  const address = candidate.roadAddress || candidate.detailAddress;
+  return {
+    address,
+    ...(candidate.roadAddress ? { road_addr: candidate.roadAddress } : {}),
+    ...(candidate.detailAddress ? { jibun_addr: candidate.detailAddress } : {}),
+    lat: candidate.lat,
+    lng: candidate.lng,
+    ...(dongCode ? { dong_code: dongCode } : {}),
+    source: 'MAP',
+  };
 }
 
 function bookmarkPropertyToSavedPreview(item: BookmarkProperty): SavedReportPreview {

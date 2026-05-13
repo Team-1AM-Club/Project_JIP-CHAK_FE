@@ -122,3 +122,58 @@ export function RiskBadge({ grade }: { grade: Grade }) {
 export function ScorePill({ score, grade }: { score: number; grade: Grade }) {
   return <span className={`score-pill grade-${grade.toLowerCase()}`}>{score}</span>;
 }
+
+export function Spinner({ size = 28, label = '불러오는 중' }: { size?: number; label?: string }) {
+  return (
+    <span
+      className="spinner"
+      role="status"
+      aria-label={label}
+      style={{ width: size, height: size, borderWidth: Math.max(2, Math.round(size / 10)) }}
+    />
+  );
+}
+
+export function LoadingState({
+  message = '불러오고 있어요…',
+  size = 32,
+}: {
+  message?: string;
+  size?: number;
+}) {
+  return (
+    <div className="loading-state" role="status" aria-live="polite">
+      <Spinner size={size} label={message} />
+      <p>{message}</p>
+    </div>
+  );
+}
+
+export function SkeletonLine({ width = '100%' }: { width?: number | string }) {
+  return <span className="skeleton-line" style={{ width }} />;
+}
+
+export function SkeletonRow() {
+  return (
+    <div className="skeleton-row" aria-hidden>
+      <span className="skeleton-circle" />
+      <div className="skeleton-row-body">
+        <SkeletonLine width="70%" />
+        <SkeletonLine width="45%" />
+      </div>
+    </div>
+  );
+}
+
+export function SkeletonReportCard() {
+  return (
+    <div className="skeleton-report-card" aria-hidden>
+      <div className="skeleton-report-top">
+        <span className="skeleton-circle" />
+        <span className="skeleton-pill" />
+      </div>
+      <SkeletonLine width="80%" />
+      <SkeletonLine width="55%" />
+    </div>
+  );
+}

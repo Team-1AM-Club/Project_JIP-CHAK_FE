@@ -11,6 +11,7 @@ export function MapSelectPage({
   onAddressResolved,
   isSubmitting = false,
   errorMessage = '',
+  confirmLabel = '이 위치 선택하기',
 }: {
   address: AddressCandidate | null;
   onBack: () => void;
@@ -19,6 +20,7 @@ export function MapSelectPage({
   onAddressResolved?: (result: ResolvedMapAddress) => void;
   isSubmitting?: boolean;
   errorMessage?: string;
+  confirmLabel?: string;
 }) {
   return (
     <div className="screen map-screen">
@@ -40,7 +42,7 @@ export function MapSelectPage({
             다시 찾기
           </Button>
           <Button onClick={confirm} disabled={!address || isSubmitting}>
-            {isSubmitting ? '분석 요청 중…' : '이 위치 선택하기'}
+            {isSubmitting ? '분석 요청 중…' : confirmLabel}
           </Button>
         </div>
       </div>

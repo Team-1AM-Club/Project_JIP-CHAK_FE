@@ -85,6 +85,11 @@ export interface CreateComparePayload {
   addresses: CompareAddressInput[];
 }
 
+export interface CompareSlot {
+  candidate: AddressCandidate;
+  dongCode?: string;
+}
+
 export interface CompareReadyResult extends CompareData {
   status: 'READY';
 }
