@@ -29,14 +29,15 @@ function normalizeAddressCandidates(response: unknown): AddressCandidate[] {
       ? ((response as { addresses?: unknown[]; items?: unknown[]; results?: unknown[] }).addresses ??
         (response as { items?: unknown[] }).items ??
         (response as { results?: unknown[] }).results ??
-        [])
+        [response])
       : [];
 
   return list.map((item, index) => {
     const record = item as Record<string, unknown>;
     const roadAddress = stringValue(record.roadAddress ?? record.road_addr ?? record.address ?? record.addressName);
     const dong = stringValue(record.dong ?? record.dong_name ?? record.dongName);
-    const gu = stringValue(record.gu ?? record.gu_name ?? record.guName);
+    const gu = stringValue(record.gu ?? record.gu_name ?? record.guName ?? record.sigungu);
+    const dongCode = stringValue(record.dongCode ?? record.dong_code ?? record.bcode ?? record.bjdCode);
 
     return {
       id: stringValue(record.id ?? record.addressId ?? record.address_id ?? record.property_id ?? `api_addr_${index}`),
@@ -44,6 +45,7 @@ function normalizeAddressCandidates(response: unknown): AddressCandidate[] {
       detailAddress: stringValue(record.detailAddress ?? record.detail_address ?? record.jibun_addr ?? record.description ?? record.placeName),
       dong,
       gu,
+      ...(dongCode ? { dongCode } : {}),
       lat: numberValue(record.lat ?? record.latitude ?? record.y),
       lng: numberValue(record.lng ?? record.lon ?? record.longitude ?? record.x),
     };

@@ -216,6 +216,7 @@ function App() {
               ...(candidate.detailAddress ? { jibun_addr: candidate.detailAddress } : {}),
               lat: candidate.lat,
               lng: candidate.lng,
+              ...(candidate.dongCode ? { dong_code: candidate.dongCode } : {}),
               source: 'SEARCH',
             };
           }),

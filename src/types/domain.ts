@@ -9,6 +9,7 @@ export interface AddressCandidate {
   detailAddress: string;
   dong: string;
   gu: string;
+  dongCode?: string;
   lat: number;
   lng: number;
 }
