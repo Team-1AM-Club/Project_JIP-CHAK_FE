@@ -13,6 +13,14 @@ body {
   background-size: 72px 72px;
 }
 
+:root[data-theme='dark'] body {
+  background:
+    linear-gradient(rgba(240, 138, 102, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 138, 102, 0.06) 1px, transparent 1px),
+    var(--color-bg);
+  background-size: 72px 72px;
+}
+
 button,
 input {
   font: inherit;
@@ -44,6 +52,12 @@ button {
   border: 1px solid rgba(26, 37, 64, 0.08);
   border-radius: 34px;
   box-shadow: 0 20px 60px rgba(26, 37, 64, 0.15);
+}
+
+:root[data-theme='dark'] .mobile-frame {
+  background: linear-gradient(180deg, #38302b 0%, var(--color-bg) 100%);
+  border-color: rgba(255, 246, 238, 0.08);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
 }
 
 .mobile-frame.has-bottom-nav {
@@ -278,6 +292,11 @@ button {
   backdrop-filter: blur(16px);
 }
 
+:root[data-theme='dark'] .bottom-nav {
+  background: rgba(52, 45, 40, 0.9);
+  border-top-color: var(--color-line);
+}
+
 .bottom-nav-item {
   display: grid;
   gap: 4px;
@@ -300,6 +319,10 @@ button {
   gap: 22px;
   padding: 64px 22px 24px;
   background: #fbf8f3;
+}
+
+:root[data-theme='dark'] .login-screen {
+  background: var(--color-bg);
 }
 
 .login-content-group {
@@ -1865,7 +1888,8 @@ button {
   padding: 0 14px;
   border: 1px solid var(--color-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--color-white);
+  color: var(--color-ink);
   font-size: 12px;
   font-weight: 800;
   justify-self: end;

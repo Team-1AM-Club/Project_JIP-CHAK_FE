@@ -25,3 +25,24 @@
   color: var(--color-ink);
   background: var(--color-bg);
 }
+
+:root[data-theme='dark'] {
+  --color-primary: #f08a66;
+  --color-coral-deep: #ff9f7c;
+  --color-coral-soft: #6b4032;
+  --color-coral-tint: #40312c;
+  --color-ink: #fff8f1;
+  --color-ink-body: #f0e6dc;
+  --color-ink-muted: #bdb0a5;
+  --color-beige: #5c5147;
+  --color-bg: #28231f;
+  --color-safe: #73c7a0;
+  --color-watch: #efbd68;
+  --color-alert: #f08075;
+  --color-white: #342d28;
+  --color-line: #4b4139;
+  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.18);
+  --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.14);
+  color: var(--color-ink);
+  background: var(--color-bg);
+}

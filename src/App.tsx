@@ -15,6 +15,7 @@ import { SearchPage } from './pages/SearchPage';
 import { WeightSettingsPage } from './pages/WeightSettingsPage';
 import { ApiError, addressApi, authApi, bookmarkApi, reportApi, userApi } from './services/api';
 import { authStorage } from './services/authStorage';
+import { applyThemePreference, getStoredThemePreference, storeThemePreference } from './services/theme';
 import {
   buildAuthorizeUrl,
   getProviderFromCallbackPath,
@@ -38,6 +39,7 @@ import type {
   Screen,
   SocialProvider,
   UserProfileType,
+  UserSettings,
 } from './types/domain';
 
 function App() {
@@ -66,7 +68,24 @@ function App() {
   const [selectedDongCode, setSelectedDongCode] = useState<string | null>(null);
   const [bookmarkPendingId, setBookmarkPendingId] = useState<string | null>(null);
   const [savedListError, setSavedListError] = useState('');
+  const [themePreference, setThemePreference] = useState<UserSettings['darkMode']>(() => getStoredThemePreference());
   const mapSearchTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    applyThemePreference(themePreference);
+
+    if (themePreference !== 'SYSTEM' || !window.matchMedia) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleSystemThemeChange = () => applyThemePreference('SYSTEM');
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange);
+    };
+  }, [themePreference]);
 
   useEffect(() => {
     const callbackProvider = getProviderFromCallbackPath(window.location.pathname);
@@ -246,6 +265,12 @@ function App() {
     setScreen(next);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const updateThemePreference = useCallback((preference: UserSettings['darkMode']) => {
+    setThemePreference(preference);
+    storeThemePreference(preference);
+    applyThemePreference(preference);
+  }, []);
 
   const handleLogin = async (provider: SocialProvider) => {
     setLoginError('');
@@ -698,6 +723,8 @@ function App() {
       {screen === 'my' && (
         <MyPage
           token={accessToken}
+          themePreference={themePreference}
+          onThemePreferenceChange={updateThemePreference}
           onLogout={handleLogout}
           onWithdraw={handleWithdraw}
           onWithdrawalComplete={handleWithdrawalComplete}

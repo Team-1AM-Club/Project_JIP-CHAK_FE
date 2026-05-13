@@ -51,12 +51,16 @@ const profileWeightSummary: Record<UserProfileType, string> = {
 
 export function MyPage({
   token,
+  themePreference,
+  onThemePreferenceChange,
   onLogout,
   onWithdraw,
   onWithdrawalComplete,
   onOpenWeightSettings,
 }: {
   token: string | null;
+  themePreference: UserSettings['darkMode'];
+  onThemePreferenceChange: (preference: UserSettings['darkMode']) => void;
   onLogout: () => Promise<void>;
   onWithdraw: () => Promise<AccountWithdrawalResult>;
   onWithdrawalComplete: () => void;
@@ -70,7 +74,7 @@ export function MyPage({
   });
   const [settings, setSettings] = useState<UserSettings>({
     notificationsEnabled: true,
-    darkMode: 'SYSTEM',
+    darkMode: themePreference,
   });
   const [statusMessage, setStatusMessage] = useState('');
   const [isUpdatingWeights, setIsUpdatingWeights] = useState(false);
@@ -96,6 +100,7 @@ export function MyPage({
             profileType: getStoredProfileType() ?? nextProfile.profileType,
           });
           setSettings(nextSettings);
+          onThemePreferenceChange(nextSettings.darkMode);
         }
       })
       .catch(() => {
@@ -107,7 +112,7 @@ export function MyPage({
     return () => {
       ignore = true;
     };
-  }, [token]);
+  }, [onThemePreferenceChange, token]);
 
   const updateProfileType = async () => {
     const currentIndex = profileOrder.indexOf(currentProfileType);
@@ -162,6 +167,7 @@ export function MyPage({
     const nextDarkMode: UserSettings['darkMode'] = settings.darkMode === 'DARK' ? 'LIGHT' : 'DARK';
     const nextSettings = { ...settings, darkMode: nextDarkMode };
     setSettings(nextSettings);
+    onThemePreferenceChange(nextDarkMode);
 
     if (!token) {
       return;
