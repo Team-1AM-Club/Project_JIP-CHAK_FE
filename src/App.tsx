@@ -223,6 +223,7 @@ function App() {
 
         if (cancelled) return;
 
+        console.log('[compare payload]', JSON.stringify({ addresses }, null, 2));
         const result = await reportApi.compare({ addresses }, accessToken);
         if (cancelled) return;
 
