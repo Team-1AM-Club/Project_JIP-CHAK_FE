@@ -100,8 +100,8 @@ export function HomePage({
 
       {!hasHomeData && (
         <Card className="empty-home-card">
-          <strong>담당 범위 외 데이터는 표시하지 않습니다</strong>
-          <p>최근 본 주소, 분석 리포트, 저장 목록은 리포트/북마크 담당 API 연동 후 노출됩니다.</p>
+          <strong>저장된 리포트가 없습니다</strong>
+          <p>리포트 화면에서 저장하면 여기에 표시됩니다.</p>
         </Card>
       )}
     </div>
