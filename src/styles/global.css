@@ -105,6 +105,10 @@ button {
   background-color: transparent;
 }
 
+:root[data-theme='dark'] .brand-logo {
+  background-image: url("/jipchak-logo_dark.png");
+}
+
 .brand.brand-logo {
   width: 104px;
   height: 42px;
@@ -113,6 +117,10 @@ button {
 .home-brand-logo {
   background-image: url("/jipchak-logo_home.png");
   background-size: 170%;
+}
+
+:root[data-theme='dark'] .home-brand-logo {
+  background-image: url("/jipchak-logo_home_dark.png");
 }
 
 .screen-heading {
