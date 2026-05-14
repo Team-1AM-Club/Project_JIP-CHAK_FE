@@ -2535,6 +2535,720 @@ button {
   border-radius: 8px;
 }
 
+.risk-section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.risk-section-title h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.risk-section-title small {
+  font-size: 11px;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+}
+
+.risk-chart-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.infra-card {
+  padding: 14px;
+}
+
+.infra-card-head {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.infra-card-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--color-primary);
+  background: var(--color-coral-tint);
+}
+
+.infra-card-head-body {
+  min-width: 0;
+}
+
+.infra-card-head-body strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.infra-card-head-body small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.infra-card-growth {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--color-primary);
+  background: var(--color-coral-tint);
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.infra-chart-area {
+  margin: 4px -4px 0;
+}
+
+.infra-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.infra-stat {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--color-coral-tint);
+}
+
+.infra-stat span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}
+
+.infra-stat strong {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.infra-inline-meta {
+  display: flex;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--color-coral-tint);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}
+
+.infra-inline-meta em {
+  font-style: normal;
+  margin-left: 4px;
+  color: var(--color-ink);
+  font-weight: 800;
+}
+
+.crime-summary-card {
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.crime-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.crime-summary-stat {
+  display: grid;
+  gap: 2px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  background: var(--color-coral-tint);
+  text-align: center;
+}
+
+.crime-summary-stat span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}
+
+.crime-summary-stat strong {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-ink);
+  line-height: 1.1;
+}
+
+.crime-summary-stat strong small {
+  font-size: 11px;
+  color: var(--color-ink-muted);
+  font-weight: 700;
+}
+
+.crime-summary-stat em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--color-ink-muted);
+  font-weight: 700;
+}
+
+.crime-summary-diff.is-positive {
+  color: var(--color-safe);
+}
+
+.crime-summary-diff.is-negative {
+  color: var(--color-alert);
+}
+
+.crime-chart-card {
+  padding: 14px;
+}
+
+.crime-legend {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.crime-legend-row {
+  display: grid;
+  grid-template-columns: 12px 56px auto 1fr;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.crime-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.crime-legend-row strong {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.crime-legend-row em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--color-ink-body);
+}
+
+.crime-legend-row small {
+  color: var(--color-ink-muted);
+  text-align: right;
+}
+
+.nearest-medical-card {
+  padding: 6px 0;
+}
+
+.nearest-medical-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nearest-medical-row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.nearest-medical-row:last-child {
+  border-bottom: 0;
+}
+
+.nearest-medical-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--color-primary);
+  background: var(--color-coral-tint);
+}
+
+.nearest-medical-body {
+  min-width: 0;
+}
+
+.nearest-medical-body small {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.nearest-medical-body strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nearest-medical-meta {
+  display: grid;
+  gap: 2px;
+  justify-items: end;
+}
+
+.nearest-medical-meta span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.nearest-medical-meta em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--color-ink-muted);
+}
+
+.night-density-card,
+.workforce-card,
+.hospital-access-card,
+.flood-defense-card,
+.flood-history-card {
+  padding: 14px;
+}
+
+.night-density-head {
+  margin-bottom: 6px;
+}
+
+.night-density-head strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.night-density-head small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.night-density-legend,
+.workforce-legend {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.night-density-legend li,
+.workforce-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.night-density-legend span,
+.workforce-legend span {
+  width: 10px;
+  height: 4px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.hospital-access-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.hospital-access-score small {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}
+
+.hospital-access-score strong {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.hospital-access-score em {
+  font-style: normal;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  margin-left: 2px;
+}
+
+.hospital-access-meta {
+  display: grid;
+  gap: 10px;
+}
+
+.hospital-access-meta > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--color-coral-tint);
+}
+
+.hospital-access-meta > div span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}
+
+.hospital-access-meta > div strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.hospital-access-nearest {
+  display: grid !important;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  text-align: left;
+}
+
+.hospital-access-nearest > svg {
+  margin-top: 4px;
+  color: var(--color-primary);
+}
+
+.hospital-access-nearest > div {
+  display: grid;
+  gap: 2px;
+}
+
+.hospital-access-nearest small {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.hospital-access-nearest strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.hospital-access-nearest em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.workforce-row-list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.workforce-row {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+}
+
+.workforce-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.workforce-row-head strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.workforce-row-head em {
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.workforce-row-meta {
+  margin-top: 4px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.workforce-row-meta small {
+  color: var(--color-ink-muted);
+}
+
+.workforce-diff {
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+.workforce-diff.is-positive {
+  color: var(--color-safe);
+  background: rgba(59, 144, 110, 0.12);
+}
+
+.workforce-diff.is-negative {
+  color: var(--color-alert);
+  background: rgba(212, 90, 74, 0.12);
+}
+
+.flood-defense-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.flood-defense-head > div:first-child small {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-ink-muted);
+}
+
+.flood-defense-head > div:first-child strong {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.flood-defense-head > div:first-child em {
+  font-style: normal;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+  margin-left: 2px;
+}
+
+.flood-defense-head-meta {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+  text-align: right;
+}
+
+.flood-defense-head-meta em {
+  font-style: normal;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.flood-defense-bar {
+  margin: 8px 0 14px;
+}
+
+.flood-defense-bar-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-line);
+  overflow: hidden;
+}
+
+.flood-defense-bar-fill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  border-radius: 999px;
+  transition: width 240ms ease;
+}
+
+.flood-defense-bar-fill.grade-safe,
+.flood-defense-bar-fill.grade-normal {
+  background: var(--color-safe);
+}
+
+.flood-defense-bar-fill.grade-caution {
+  background: var(--color-watch);
+}
+
+.flood-defense-bar-fill.grade-danger {
+  background: var(--color-alert);
+}
+
+.flood-defense-bar-avg {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--color-ink);
+  transform: translateX(-50%);
+}
+
+.flood-defense-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--color-ink-muted);
+  font-weight: 700;
+}
+
+.flood-defense-metrics {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.flood-defense-metric {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+}
+
+.flood-defense-metric-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.flood-defense-metric-head strong {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.flood-defense-metric-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.flood-defense-metric-value em {
+  font-style: normal;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.flood-defense-metric-value small {
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.flood-history-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.flood-history-head strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.flood-history-head small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.flood-history-nearby {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--color-alert);
+  background: rgba(212, 90, 74, 0.1);
+}
+
+.flood-history-events {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.flood-history-event {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--color-coral-tint);
+}
+
+.flood-history-event-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.flood-history-event-head span {
+  color: var(--color-primary);
+}
+
+.flood-history-event-head em {
+  font-style: normal;
+  color: var(--color-ink-muted);
+}
+
+.flood-history-event strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ink);
+  line-height: 1.4;
+}
+
+.flood-history-event-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--color-ink-muted);
+}
+
 @keyframes spinner-rotate {
   to {
     transform: rotate(360deg);

@@ -314,7 +314,16 @@ export type RiskTypeWire =
   | 'congestion'
   | (string & {});
 
-export type GradeLabel = '안심' | '양호' | '주의' | '경고' | '위험' | (string & {});
+export type GradeLabel =
+  | '안심'
+  | '양호'
+  | '주의'
+  | '경고'
+  | '위험'
+  | '충분'
+  | '보통'
+  | '부족'
+  | (string & {});
 
 export interface AnalysisCategory {
   type: RiskTypeWire;
@@ -385,10 +394,66 @@ export interface FloodVisualizationLayer {
   source: string;
 }
 
+export type FloodDefenseKey =
+  | 'elevation'
+  | 'pump_capacity'
+  | 'impervious_ratio'
+  | (string & {});
+
+export interface FloodDefenseMetric {
+  key: FloodDefenseKey;
+  label: string;
+  value: number;
+  display_value: string;
+  sub_value: number | null;
+  sub_display_value: string | null;
+  score: number;
+  status: GradeLabel;
+}
+
+export interface FloodDefense {
+  title: string;
+  score: number;
+  status: GradeLabel;
+  gu_average: number;
+  percentile_label: string;
+  metrics: FloodDefenseMetric[];
+}
+
+export interface FloodHistoryYear {
+  year: number;
+  count: number;
+}
+
+export interface FloodHistoryEvent {
+  year: number;
+  label: string;
+  type: string;
+  area_m2?: number;
+  depth_cm?: number;
+  lat?: number;
+  lng?: number;
+}
+
+export interface FloodHistory {
+  title: string;
+  period: string;
+  total_count: number;
+  display_total: string;
+  gu_average: number;
+  average_label: string;
+  years: FloodHistoryYear[];
+  events: FloodHistoryEvent[];
+  has_nearby_history?: boolean;
+  nearby_count?: number;
+}
+
 export interface FloodVisualization {
   type: 'map' | (string & {});
   center: { lat: number; lng: number };
   layers: FloodVisualizationLayer[];
+  flood_defense?: FloodDefense | null;
+  flood_history?: FloodHistory | null;
 }
 
 export interface FloodRiskDetail {
@@ -419,10 +484,82 @@ export interface SecurityVisualizationLayer {
   source: string;
 }
 
+export interface SecurityCctvChart {
+  title?: string;
+  cctv_count?: number;
+  radius_m?: number;
+  years: number[];
+  counts: number[];
+  growth_rate: number;
+  growth_label: string;
+}
+
+export interface SecurityStreetLightChart {
+  title: string;
+  status: GradeLabel;
+  nearby_count: number;
+  radius_m: number;
+  density: number;
+  density_label: string;
+  safe_spot_count: number;
+  safe_spot_label: string;
+  avg_safe_bonus_score: number;
+}
+
+export interface SecurityPoliceChart {
+  title: string;
+  name: string;
+  distance_m: number;
+  distance_label: string;
+  travel_label: string;
+}
+
+export interface SecurityInfraChart {
+  cctv?: SecurityCctvChart | null;
+  street_light?: SecurityStreetLightChart | null;
+  police?: SecurityPoliceChart | null;
+}
+
+export interface CrimeChartSummary {
+  total_occurrence: number;
+  occurrence_diff_from_seoul_avg: number;
+  clearance_rate: number;
+  seoul_clearance_rate: number;
+  rank: number;
+  rank_total: number;
+  safe_percentile: number;
+}
+
+export type CrimeType = 'murder' | 'robbery' | 'rape' | 'theft' | 'violence' | (string & {});
+
+export interface CrimeChartItem {
+  type: CrimeType;
+  label: string;
+  occurrence: number;
+  clearance_rate: number;
+  bar_value: number;
+  status: GradeLabel;
+  display_occurrence: string;
+  display_clearance_rate: string;
+}
+
+export interface CrimeChart {
+  title: string;
+  subtitle: string;
+  scope: string;
+  gu_name: string;
+  display_region_name: string;
+  years: number[];
+  summary: CrimeChartSummary;
+  items: CrimeChartItem[];
+}
+
 export interface SecurityVisualization {
   type: 'map' | (string & {});
   center: { lat: number; lng: number };
   layers: SecurityVisualizationLayer[];
+  security_infra_chart?: SecurityInfraChart | null;
+  crime_chart?: CrimeChart | null;
 }
 
 export interface SecurityRiskDetail {
@@ -452,10 +589,91 @@ export interface MedicalVisualizationLayer {
   source: string;
 }
 
+export type NearestMedicalType =
+  | 'general_hospital'
+  | 'hospital'
+  | 'clinic'
+  | 'pharmacy'
+  | (string & {});
+
+export interface NearestMedicalItem {
+  type: NearestMedicalType;
+  label: string;
+  name: string;
+  distance_m: number;
+  distance_label: string;
+  travel_label: string;
+}
+
+export interface NearestMedicalChart {
+  title: string;
+  items: NearestMedicalItem[];
+}
+
+export interface NightDensityTimeSlot {
+  hour: string;
+  count: number;
+  clinic_count: number;
+  pharmacy_count: number;
+  status: GradeLabel;
+}
+
+export interface NightDensityChart {
+  title: string;
+  radius_m: number;
+  density: number;
+  density_label: string;
+  gu_average: number;
+  gu_average_label: string;
+  time_slots: NightDensityTimeSlot[];
+}
+
+export interface HospitalAccessNearest {
+  name: string;
+  distance_m: number;
+  distance_label: string;
+}
+
+export interface HospitalAccessChart {
+  title: string;
+  radius_m: number;
+  hospital_count: number;
+  display_count: string;
+  access_score: number;
+  status: GradeLabel;
+  nearest_hospital: HospitalAccessNearest;
+}
+
+export type MedicalWorkforceKey = 'nurse' | 'specialist' | 'total' | (string & {});
+
+export interface MedicalWorkforceItem {
+  key: MedicalWorkforceKey;
+  label: string;
+  value: number;
+  display_value: string;
+  gu_average: number;
+  gu_average_label: string;
+  diff_from_average: number;
+  diff_label: string;
+  score: number;
+  status: GradeLabel;
+}
+
+export interface MedicalWorkforceChart {
+  title: string;
+  scope: string;
+  gu_name: string;
+  items: MedicalWorkforceItem[];
+}
+
 export interface MedicalVisualization {
   type: 'map' | (string & {});
   center: { lat: number; lng: number };
   layers: MedicalVisualizationLayer[];
+  nearest_medical_chart?: NearestMedicalChart | null;
+  night_density_chart?: NightDensityChart | null;
+  hospital_access_chart?: HospitalAccessChart | null;
+  medical_workforce_chart?: MedicalWorkforceChart | null;
 }
 
 export interface MedicalRiskDetail {

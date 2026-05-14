@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react';
 import { CloudRain, ShieldCheck, Stethoscope, Users, Volume2 } from 'lucide-react';
 import { Button, Card, Header, LoadingState, RiskBadge } from '../components/ui';
+import { CrimeChartSection } from '../components/risk-detail/CrimeChartSection';
+import { FloodDefenseCard } from '../components/risk-detail/FloodDefenseCard';
+import { FloodHistoryChart } from '../components/risk-detail/FloodHistoryChart';
+import { HospitalAccessCard } from '../components/risk-detail/HospitalAccessCard';
+import { MedicalWorkforceChart } from '../components/risk-detail/MedicalWorkforceChart';
+import { NearestMedicalList } from '../components/risk-detail/NearestMedicalList';
+import { NightDensityChart } from '../components/risk-detail/NightDensityChart';
+import { SecurityInfraSection } from '../components/risk-detail/SecurityInfraSection';
+import { gradeFromLabel } from '../components/risk-detail/gradeUtils';
 import { ApiError, reportApi } from '../services/api';
 import type {
   CongestionRiskDetail,
   FloodRiskDetail,
-  Grade,
-  GradeLabel,
   MedicalRiskDetail,
   NoiseRiskDetail,
   RiskType,
@@ -109,6 +116,8 @@ export function RiskDetailPage({ reportId, riskType, token, onBack }: RiskDetail
         <p className="risk-detail-summary">{detail.summary}</p>
       </Card>
 
+      <CategoryCharts detail={detail} />
+
       {detail.indicators.length > 0 && (
         <section className="risk-detail-section">
           <h2>세부 지표</h2>
@@ -171,6 +180,55 @@ export function RiskDetailPage({ reportId, riskType, token, onBack }: RiskDetail
   );
 }
 
+function CategoryCharts({ detail }: { detail: RiskDetail }) {
+  if (detail.category === 'security') {
+    return (
+      <>
+        {detail.visualization.security_infra_chart && (
+          <SecurityInfraSection chart={detail.visualization.security_infra_chart} />
+        )}
+        {detail.visualization.crime_chart && (
+          <CrimeChartSection chart={detail.visualization.crime_chart} />
+        )}
+      </>
+    );
+  }
+
+  if (detail.category === 'medical') {
+    return (
+      <>
+        {detail.visualization.nearest_medical_chart && (
+          <NearestMedicalList chart={detail.visualization.nearest_medical_chart} />
+        )}
+        {detail.visualization.hospital_access_chart && (
+          <HospitalAccessCard chart={detail.visualization.hospital_access_chart} />
+        )}
+        {detail.visualization.night_density_chart && (
+          <NightDensityChart chart={detail.visualization.night_density_chart} />
+        )}
+        {detail.visualization.medical_workforce_chart && (
+          <MedicalWorkforceChart chart={detail.visualization.medical_workforce_chart} />
+        )}
+      </>
+    );
+  }
+
+  if (detail.category === 'flood') {
+    return (
+      <>
+        {detail.visualization.flood_defense && (
+          <FloodDefenseCard chart={detail.visualization.flood_defense} />
+        )}
+        {detail.visualization.flood_history && (
+          <FloodHistoryChart chart={detail.visualization.flood_history} />
+        )}
+      </>
+    );
+  }
+
+  return null;
+}
+
 function fetchDetail(reportId: string, riskType: RiskType, token: string | null): Promise<RiskDetail> {
   const t = token ?? undefined;
   switch (riskType) {
@@ -206,22 +264,6 @@ function iconForRisk(type: RiskType) {
       return <Volume2 size={24} />;
     case 'CONGESTION':
       return <Users size={24} />;
-  }
-}
-
-function gradeFromLabel(label: GradeLabel): Grade {
-  switch (label) {
-    case '안심':
-      return 'SAFE';
-    case '양호':
-      return 'NORMAL';
-    case '주의':
-      return 'CAUTION';
-    case '경고':
-    case '위험':
-      return 'DANGER';
-    default:
-      return 'NORMAL';
   }
 }
 
