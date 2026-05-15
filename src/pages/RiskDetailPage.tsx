@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
 import { CloudRain, ShieldCheck, Stethoscope, Users, Volume2 } from 'lucide-react';
 import { Button, Card, Header, LoadingState, RiskBadge } from '../components/ui';
+import { BusHourlyChart } from '../components/risk-detail/BusHourlyChart';
 import { CrimeChartSection } from '../components/risk-detail/CrimeChartSection';
 import { FloodDefenseCard } from '../components/risk-detail/FloodDefenseCard';
 import { FloodHistoryChart } from '../components/risk-detail/FloodHistoryChart';
 import { HospitalAccessCard } from '../components/risk-detail/HospitalAccessCard';
 import { MedicalWorkforceChart } from '../components/risk-detail/MedicalWorkforceChart';
+import { NearbyTransportChart } from '../components/risk-detail/NearbyTransportChart';
 import { NearestMedicalList } from '../components/risk-detail/NearestMedicalList';
 import { NightDensityChart } from '../components/risk-detail/NightDensityChart';
+import { NoiseHourlyChart } from '../components/risk-detail/NoiseHourlyChart';
+import { NoiseSourceChart } from '../components/risk-detail/NoiseSourceChart';
+import { PopulationHourlyChart } from '../components/risk-detail/PopulationHourlyChart';
 import { SecurityInfraSection } from '../components/risk-detail/SecurityInfraSection';
 import { gradeFromLabel } from '../components/risk-detail/gradeUtils';
 import { ApiError, reportApi } from '../services/api';
@@ -221,6 +226,35 @@ function CategoryCharts({ detail }: { detail: RiskDetail }) {
         )}
         {detail.visualization.flood_history && (
           <FloodHistoryChart chart={detail.visualization.flood_history} />
+        )}
+      </>
+    );
+  }
+
+  if (detail.category === 'noise') {
+    return (
+      <>
+        {detail.visualization.noise_source_chart && (
+          <NoiseSourceChart chart={detail.visualization.noise_source_chart} />
+        )}
+        {detail.visualization.noise_hourly_chart && (
+          <NoiseHourlyChart chart={detail.visualization.noise_hourly_chart} />
+        )}
+      </>
+    );
+  }
+
+  if (detail.category === 'congestion') {
+    return (
+      <>
+        {detail.visualization.population_hourly_chart && (
+          <PopulationHourlyChart chart={detail.visualization.population_hourly_chart} />
+        )}
+        {detail.visualization.nearby_transport_chart && (
+          <NearbyTransportChart chart={detail.visualization.nearby_transport_chart} />
+        )}
+        {detail.visualization.bus_hourly_chart && (
+          <BusHourlyChart chart={detail.visualization.bus_hourly_chart} />
         )}
       </>
     );

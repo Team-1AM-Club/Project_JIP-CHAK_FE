@@ -3565,3 +3565,326 @@ button {
 .compare-slot-gauge .circle-score-gauge-compact .circle-score-center strong {
   font-size: 22px;
 }
+
+/* ───── noise source cards ───── */
+
+.noise-source-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.noise-source-card {
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.noise-source-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.noise-source-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--color-coral-tint);
+  color: var(--color-primary);
+  flex: 0 0 auto;
+}
+
+.noise-source-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.noise-source-title strong {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.noise-source-value {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.noise-source-desc {
+  margin: 0;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+  line-height: 1.4;
+}
+
+.noise-source-meta {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+
+.noise-source-meta li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.noise-source-meta em {
+  font-style: normal;
+  color: var(--color-ink-muted);
+  font-weight: 700;
+}
+
+.noise-source-meta span {
+  color: var(--color-ink-body);
+  font-weight: 700;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ───── noise hourly chart ───── */
+
+.noise-hourly-card {
+  padding: 14px;
+}
+
+.noise-hourly-legend {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.noise-hourly-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.noise-hourly-legend span {
+  width: 10px;
+  height: 4px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.noise-hourly-summary {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.noise-hourly-summary li {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--color-coral-tint);
+}
+
+.noise-hourly-summary em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.noise-hourly-summary strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+/* ───── population hourly chart ───── */
+
+.population-hourly-card {
+  padding: 14px;
+}
+
+.population-hourly-summary {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.population-hourly-summary li {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--color-coral-tint);
+  text-align: center;
+}
+
+.population-hourly-summary em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.population-hourly-summary strong {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+/* ───── nearby transport cards ───── */
+
+.nearby-transport-list {
+  display: grid;
+  gap: 10px;
+}
+
+.transport-card {
+  padding: 12px 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.transport-head {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.transport-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--color-coral-tint);
+  color: var(--color-primary);
+}
+
+.transport-title {
+  min-width: 0;
+}
+
+.transport-title strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transport-title small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.transport-meta {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.transport-meta li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.transport-meta em {
+  font-style: normal;
+  color: var(--color-ink-muted);
+  font-weight: 700;
+}
+
+.transport-meta span {
+  color: var(--color-ink);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ───── bus hourly chart (collapsible) ───── */
+
+.bus-hourly-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  background: var(--color-white, #fff);
+  text-align: left;
+  color: var(--color-ink);
+}
+
+.bus-hourly-toggle-text h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.bus-hourly-toggle-text small {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--color-ink-muted);
+}
+
+.bus-hourly-toggle-icon {
+  transition: transform 160ms ease;
+  color: var(--color-ink-muted);
+  flex: 0 0 auto;
+}
+
+.bus-hourly-toggle.is-open .bus-hourly-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.bus-hourly-card {
+  padding: 14px;
+  margin-top: 8px;
+}
+
+.bus-hourly-summary {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--color-ink-muted);
+}
+
+.bus-hourly-summary strong {
+  color: var(--color-ink);
+  font-weight: 800;
+}

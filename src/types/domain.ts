@@ -714,11 +714,54 @@ export interface NoiseVisualizationChart {
   cached: boolean;
 }
 
+export type NoiseSourceItemKey =
+  | 'traffic'
+  | 'complaint'
+  | 'pub'
+  | 'measurement'
+  | (string & {});
+
+export interface NoiseSourceItem {
+  key: NoiseSourceItemKey;
+  label: string;
+  display_value: string;
+  unit?: string | null;
+  status: GradeLabel;
+  description?: string | null;
+  distance_label?: string | null;
+  meta?: Record<string, string | number | boolean | null | undefined>;
+}
+
+export interface NoiseSourceChart {
+  title?: string;
+  items: NoiseSourceItem[];
+}
+
+export interface NoiseHourlyChartSummary {
+  peak?: string | null;
+  night_average_label?: string | null;
+}
+
+export interface NoiseHourlyChart {
+  title: string;
+  subtitle?: string | null;
+  station?: string | null;
+  distance_label?: string | null;
+  unit?: string | null;
+  labels: string[];
+  values: number[];
+  lden_values?: number[] | null;
+  statuses?: GradeLabel[] | null;
+  summary?: NoiseHourlyChartSummary | null;
+}
+
 export interface NoiseVisualization {
   type: 'map_chart' | (string & {});
   center: { lat: number; lng: number };
   chart: NoiseVisualizationChart;
   layers: NoiseVisualizationLayer[];
+  noise_source_chart?: NoiseSourceChart | null;
+  noise_hourly_chart?: NoiseHourlyChart | null;
 }
 
 export interface NoiseRiskDetail {
@@ -762,10 +805,69 @@ export interface CongestionVisualizationChart {
   cached: boolean;
 }
 
+export interface PopulationHourlyChartSummary {
+  morning_peak?: string | null;
+  evening_peak?: string | null;
+  night?: string | null;
+}
+
+export interface PopulationHourlyChart {
+  title: string;
+  scope?: string | null;
+  unit?: string | null;
+  labels: string[];
+  values: number[];
+  statuses?: GradeLabel[] | null;
+  summary?: PopulationHourlyChartSummary | null;
+}
+
+export interface NearbyTransportSubway {
+  station_name: string;
+  line_name?: string | null;
+  distance_label?: string | null;
+  travel_label?: string | null;
+  status?: GradeLabel | null;
+  daily_passengers_label?: string | null;
+  avg_congestion_label?: string | null;
+  peak_congestion_label?: string | null;
+}
+
+export interface NearbyTransportBus {
+  stop_name: string;
+  stop_type?: string | null;
+  distance_label?: string | null;
+  travel_label?: string | null;
+  status?: GradeLabel | null;
+  daily_avg_usage_label?: string | null;
+  congestion_score_label?: string | null;
+}
+
+export interface NearbyTransportChart {
+  subway?: NearbyTransportSubway | null;
+  bus?: NearbyTransportBus | null;
+}
+
+export interface BusHourlyChartSummary {
+  peak?: string | null;
+}
+
+export interface BusHourlyChart {
+  title: string;
+  radius_m?: number | null;
+  unit?: string | null;
+  labels: string[];
+  values: number[];
+  stop_count?: number | null;
+  summary?: BusHourlyChartSummary | null;
+}
+
 export interface CongestionVisualization {
   type: 'chart' | (string & {});
   chart: CongestionVisualizationChart;
   layers: CongestionVisualizationLayer[];
+  population_hourly_chart?: PopulationHourlyChart | null;
+  nearby_transport_chart?: NearbyTransportChart | null;
+  bus_hourly_chart?: BusHourlyChart | null;
 }
 
 export interface CongestionRiskDetail {
